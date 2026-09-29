@@ -1,0 +1,8 @@
+# what each machine builds for itself
+lean/.lake/
+lean/.sandbox/
+local/
+__pycache__/
+# the documents; the list is kept
+literature/*
+!literature/LIST.md

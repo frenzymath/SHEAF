@@ -1,0 +1,5 @@
+# every directory but the template is a project, with a repository of its own
+/*/
+!/template/
+!/docs/
+__pycache__/
