@@ -54,7 +54,7 @@ So the target statements change only on the human's instruction. A change to a d
 ## 5. Standards
 
 - A target is proved when `#print axioms` shows nothing beyond `propext`, `Classical.choice`, `Quot.sound`.
-- No hollow definitions. A definition is hollow when its data is not known yet: it contains `sorry`, or it takes its data out of a theorem that is still `sorry`, as `Classical.choose` does from an unproved existence and an inverse does from an unproved bijection. Everything built on a hollow definition proves something about an unknown object. A proof that a definition needs and that is not done yet is a different matter: state it as a named theorem of its own, and let the definition refer to it.
+- No hollow definitions. A definition is hollow when its data is written as `sorry`: everything built on it then proves something about an unknown object. A definition may take its data from a theorem that is still `sorry`, as an inverse does from a bijection not yet proved; only the proof is postponed. A proof that a definition itself needs is stated as a named theorem of its own, which the definition refers to, not left inside it as `sorry`.
 - Every `sorry` you leave is a named theorem with its source and a complete natural-language proof in its docstring, and a DAG node matching it, so that anyone can take it over from those two alone.
 - Test a new statement on its edge cases before writing it. Mark one you believe false with `STATEMENT-DISPUTED: <reason>` and report it; a false lemma makes everything above it look proved.
 - The number of `sorry`s is not a measure of progress.
