@@ -1,6 +1,6 @@
 # AGENTS.md
 
-A session opened in this directory is the launcher. You set the project up with the human, start the other agents, and then keep the project running. You do not formalize anything.
+A session opened in this directory is the launcher. You set the project up with the human, start the other agents, and then keep the project running. You do none of the mathematics or of its formalization, and neither does any sub-agent of yours (§3).
 
 The project lives in a directory of its own, under the name the human gives it, or `project` if they give none. Below, `project/` stands for that directory, and `<p>` for its name. The agents you start work there, and their contract is `project/AGENTS.md`; this file is yours alone.
 
@@ -25,7 +25,7 @@ Tell the human what will happen: you settle the settings and the targets with th
 
 ## 3. The plan
 
-**Agents.** The work has six parts: building and pushing (`project/roles/maintainer.md`); keeping the project running (§6); claiming items, reviewing deliveries and landing them (`project/roles/lead.md`); doing an item (`project/roles/worker.md`). The default is one maintainer and several leads. You start these sessions; the workers are sub-agents that each lead starts itself. Give each lead a number of workers that its agent can run at once and that it can still review, and start as many leads as it takes for all their workers together to reach the maximum number of concurrent subagents in `project/SETUP.md`. You may arrange the parts differently to fit `project/SETUP.md` and the agents available, as long as every part is done by some agent and building by exactly one.
+**Agents.** The work has six parts: building and pushing (`project/roles/maintainer.md`); keeping the project running (§6); claiming items, reviewing deliveries and landing them (`project/roles/lead.md`); doing an item (`project/roles/worker.md`). The default is one maintainer and several leads. You start these sessions; the workers are sub-agents that each lead starts itself. Give each lead a number of workers that its agent can run at once and that it can still review, and start as many leads as it takes for all their workers together to reach the maximum number of concurrent subagents in `project/SETUP.md`. You may arrange the parts differently to fit `project/SETUP.md` and the agents available, as long as every part is done by some agent and building by exactly one. The mathematics and its formalization are the one part you may not take on: no DAG node and no Lean definition, statement or proof is written or reviewed by you or by a sub-agent that you start yourself. It is done by the sessions you start and by their sub-agents.
 
 **Several machines.** `project/AGENTS.md` §3 describes one library on one machine. To work on several machines, the human must provide a remote repository for `project/`, of their own and empty; record it in `project/SETUP.md`. Each machine has its own clone of SHEAF, its own clone of that repository as `project/`, its own launcher and its own maintainer: every maintainer merges the remote before it builds and pushes what it has built green. `project/SETUP.md` and the plan in `project/coord/STATE.md` get one entry per machine where the machines differ, and each machine has its own file in `project/coord/machines/`. Two machines must not work on the same item. Choose one way:
 
@@ -75,13 +75,11 @@ A session that was started is not yet a session that works. After starting each 
 
 ## 6. Keeping the project running
 
-Tell the human which sessions run, how to watch one (`tmux attach -t <session>`, leave with `Ctrl-b d`) and stop one (`tmux kill-session -t <session>`), that progress is in `project/coord/STATE.md`, `project/coord/queue.md` and `project/coord/ledger.md`, and that questions for them are in `project/coord/HUMAN.md`. Then stay until the completion criterion of `project/GOAL.md` holds, checking the following again and again. Ask the human to type this into your session:
+Tell the human which sessions run, how to watch one (`tmux attach -t <session>`, leave with `Ctrl-b d`) and stop one (`tmux kill-session -t <session>`), that progress is in `project/coord/STATE.md`, `project/coord/queue.md` and `project/coord/ledger.md`, and that questions for them are in `project/coord/HUMAN.md`. Then stay until the completion criterion of `project/GOAL.md` holds, and check the following again and again.
 
-```
-/goal The completion criterion of project/GOAL.md holds. Keep the project running.
-```
+Set a timer that wakes you for each check, every ten minutes at first. Let what the checks find decide the interval from then on: shorten it while they keep finding something to repair, and lengthen it when several in a row find nothing. Set the timer again whenever your session is started anew, and cancel it when the completion criterion holds.
 
-Until they have, go on checking by yourself after every reply.
+Your checks stop when your session ends. If you do not run inside tmux, tell the human so, and ask them to start you again inside tmux before they leave you alone.
 
 - **Sessions.** Run the session check in `project/` (`project/tools/README.md`), and read the screen of every session it does not report as working. Answer a session that waits at a question, as the contract says. Restart a session that has stopped, as §5 says; its claims stay valid. On a usage limit, record it and wait.
 - **The human.** Read `project/coord/HUMAN.md` and `project/literature/LIST.md`. Bring every open question and every wanted document to the human at once, and ask again until it is settled. Put the documents they provide into `project/literature/`. Write each answer under "Answered" in `project/coord/HUMAN.md` and tell the agent that asked, which deletes the entry once it has acted on it. Delete the entry yourself when that agent no longer runs. Record in `project/SETUP.md` what the human decides for the rest of the run.

@@ -13,7 +13,7 @@ Agent systems such as Claude Code and Codex can now formalize any mathematical c
 
 ## Getting started
 
-Clone this repository and start an agent in the root of the clone: Claude Code, Codex or any other. Then talk to it; it reads [`AGENTS.md`](AGENTS.md) and guides you from there. Each project it creates lives in a directory of its own here, which is a git repository that you can publish under your own account.
+Clone this repository and start an agent in the root of the clone: Claude Code, Codex or any other. Start it inside tmux, because it watches over the project for the whole run and must keep running after you close your terminal. Then talk to it; it reads [`AGENTS.md`](AGENTS.md) and guides you from there. Each project it creates lives in a directory of its own here, which is a git repository that you can publish under your own account.
 
 > The scripts in [`template/tools/`](template/tools/) are vibe-coded. Let your agents change them as your project needs.
 
