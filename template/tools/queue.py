@@ -17,8 +17,9 @@ A module whose proof would use a node that has no Lean declaration yet is not an
 until stage 2 has stated that node. A module in the closure may still contain declarations nothing uses: the
 closure is an upper bound of what the targets need.
 
-coord/queue.tsv lists stage 3 first, then 2, then 1, so that `claim.py next` without `--stage` takes the proof
-nearest to a target when there is one.
+coord/queue.tsv lists stage 1 first, then 2, then 3. Within stages 1 and 3 the items nearest to a target come
+first; within stage 2 the items nearest to Mathlib, counted in dependency steps down to a Mathlib leaf, so the
+statements climb from Mathlib upward. `claim.py next` without `--stage` takes from the head.
 """
 from __future__ import annotations
 import collections, pathlib, sys
@@ -92,15 +93,28 @@ def main() -> int:
     if cmd != "write":
         print(__doc__); return 2
     WORK.mkdir(exist_ok=True)
-    rows = [(m, 3, d, n, k) for _, d, m, n, k in items3]
-    rows += [(i, 2, d if d < 10**6 else "-", "", "target-statement" if pri == 0 else "state") for pri, d, i in s2]
-    rows += [(i, 1, d if d < 10**6 else "-", "", "split") for d, i in s1]
+    rows = [(i, 1, d if d < 10**6 else "-", "", "split") for d, i in s1]
+    rows += [(i, 2, h, "", "target-statement" if pri == 0 else "state") for pri, h, i in s2]
+    rows += [(m, 3, d, n, k) for _, d, m, n, k in items3]
     with open(WORK / "queue.tsv", "w") as f:
-        f.write("# item\tstage\tdistance\tsorry\tkind\n")
+        f.write("# item\tstage\tdistance (to a target; to Mathlib in stage 2)\tsorry\tkind\n")
         for r in rows:
             f.write("\t".join(str(x) for x in r) + "\n")
     with open(WORK / "queue.md", "w") as f:
         f.write(f"# Work queue\n\n{len(rows)} items; claim with `tools/claim.py next <group> [--stage N]`.\n\n")
+        f.write(f"## Stage 1: nodes to split ({len(s1)})\n\n")
+        if s1:
+            f.write("| node | distance to a target |\n|---|---|\n")
+            for d, i in s1:
+                f.write(f"| `{i}` | {d if d < 10**6 else '-'} |\n")
+        f.write(f"\n## Stage 2: nodes to state ({len(s2)})\n\n")
+        if s2:
+            f.write("| node | distance to Mathlib | kind |\n|---|---|---|\n")
+            for pri, h, i in s2:
+                f.write(f"| `{i}` | {h} | {'target-statement' if pri == 0 else 'state'} |\n")
+        if why:
+            f.write("\nNot open yet: " + ", ".join(f"{v} nodes that {k.replace('waits', 'wait')}" for k, v in why.items()) + ".\n")
+        f.write("\n")
         f.write(f"## Stage 3: modules to prove ({len(items3)})\n\n")
         if items3:
             f.write("| module | distance to a target | sorry | kind |\n|---|---|---|---|\n")
@@ -111,18 +125,6 @@ def main() -> int:
             f.write("| module | distance to a target | sorry |\n|---|---|---|\n")
             for d, m, n in held:
                 f.write(f"| `{m}` | {d} | {n} |\n")
-        f.write(f"\n## Stage 2: nodes to state ({len(s2)})\n\n")
-        if s2:
-            f.write("| node | distance to a target | kind |\n|---|---|---|\n")
-            for pri, d, i in s2:
-                f.write(f"| `{i}` | {d if d < 10**6 else '-'} | {'target-statement' if pri == 0 else 'state'} |\n")
-        if why:
-            f.write("\nNot open yet: " + ", ".join(f"{v} nodes that {k.replace('waits', 'wait')}" for k, v in why.items()) + ".\n")
-        f.write(f"\n## Stage 1: nodes to split ({len(s1)})\n\n")
-        if s1:
-            f.write("| node | distance to a target |\n|---|---|\n")
-            for d, i in s1:
-                f.write(f"| `{i}` | {d if d < 10**6 else '-'} |\n")
     print(f"wrote {len(rows)} items to coord/queue.tsv and coord/queue.md (stage 3: {len(items3)}, waiting {len(held)}; stage 2: {len(s2)}; stage 1: {len(s1)})")
     return 0
 

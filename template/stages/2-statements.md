@@ -13,9 +13,9 @@ An item of this stage is a node that stage 1 is finished with (`stages/1-dag.md`
 
 ## 2. Order
 
-The order is set by the dependencies: a node is stated after the nodes its statement needs, so this stage climbs from Mathlib upward whatever order stage 1 and stage 3 keep. Stating from the targets downward is an error: a statement written before the definitions it uses exist cannot compile, and a queue ordered that way stops every worker. Every node that is not in Mathlib is formalized, whether the targets need it for their statements or for their proofs. Within what is open, the nodes needed to state the targets come first, so that `Challenge.lean` can be written and stage 3 can begin; then the open nodes nearest to a target. Beyond that, `SETUP.md` decides:
+The order is set by the dependencies: a node is stated after the nodes its statement needs, so this stage climbs from Mathlib upward whatever order stage 1 and stage 3 keep. Stating from the targets downward is an error: a statement written before the definitions it uses exist cannot compile, and a queue ordered that way stops every worker. Every node that is not in Mathlib is formalized, whether the targets need it for their statements or for their proofs. Within what is open, the nodes nearest to Mathlib come first, counted in dependency steps down to a Mathlib leaf. `SETUP.md` decides one exception:
 
-- **The human asked for an early review of the target statements.** Formalize first only the targets and the nodes needed to state them, write `Challenge.lean`, review the targets (§4), and ask the human to confirm them (`coord/HUMAN.md`). Formalize the rest when they have.
+- **The human asked for an early review of the target statements.** Then the nodes needed to state the targets come first: formalize only those, write `Challenge.lean`, review the targets (§4), and ask the human to confirm them (`coord/HUMAN.md`). Formalize the rest when they have.
 - **Otherwise** the targets are reviewed when their statements compile, and nothing waits for it.
 
 ## 3. Statements

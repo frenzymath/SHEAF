@@ -38,7 +38,7 @@ Write the plan into `project/coord/STATE.md`: the names of the sessions to start
 
 1. The agents need the Lean 4 skills (<https://github.com/cameronfreer/lean4-skills>). Install them if they are missing, and have the human enable them.
 2. Install `elan` if it is missing, after asking the human. Use the Mathlib version of `project/SETUP.md` and the Lean toolchain it pins. An existing project keeps its versions unless the human says otherwise.
-3. Set up the Lean project with Mathlib, or adopt the existing one, so that it is reached as `project/lean/` and `lake build` compiles every module of the library as well as `TargetsCheck.lean` and `Challenge.lean`. Write `project/coord/sheaf.env`, and `project/coord/machines/<host name>.env` if this machine needs settings of its own (`project/tools/README.md`). Check on a small file that the build and a single-file compile work.
+3. Set up the Lean project with Mathlib, or adopt the existing one, so that it is reached as `project/lean/` and `lake build` compiles every module of the library as well as `TargetsCheck.lean` and `Challenge.lean`. Write `project/coord/sheaf.env`, with `SHEAF_EARLY_REVIEW=1` when `project/SETUP.md` asks for the early review, and `project/coord/machines/<host name>.env` if this machine needs settings of its own (`project/tools/README.md`). Check on a small file that the build and a single-file compile work.
 4. Write `1-dag` as the open stage in `project/coord/STATE.md`. Create `project/coord/deliveries.log`, `project/coord/ledger.md`, `project/coord/claims/` and `project/coord/changes/`. Commit `project/`.
 
 ## 5. Starting the sessions

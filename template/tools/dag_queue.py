@@ -3,7 +3,7 @@
 
 Usage:
   tools/dag_queue.py summary      how many nodes each stage has open, and why the others are not open
-  tools/dag_queue.py items        the open items, one per line: stage, item, distance to a target, kind
+  tools/dag_queue.py items        the open items, one per line: stage, item, distance (to a target in stage 1, to Mathlib in stage 2), kind
   tools/dag_queue.py waiting      modules whose proof uses a node that has no Lean declaration yet, one per line
 
 `queue.py write` calls this and puts the items into coord/queue.tsv; run this by hand only to look.
@@ -14,7 +14,9 @@ What is open follows the stage documents. A node is open for
            (it is still to be split); nearest to a target first;
   stage 2  when stage 1 is finished with it (it is a definition, or a statement with its proof in steps),
            it has no Lean declaration yet, and every node its statement needs has one or is a Mathlib leaf;
-           the nodes needed to state the targets first, then nearest to a target first.
+           nearest to Mathlib first (the fewest dependency steps down to a Mathlib leaf), so that the
+           statements climb from Mathlib upward. With SHEAF_EARLY_REVIEW=1 in coord/sheaf.env the nodes
+           needed to state the targets come first instead.
 
 A module of stage 3 is held back ("waiting") while a node that its proof uses has no Lean declaration: its
 proof cannot be written yet. The order of the dependencies is never overridden: no node is stated before the
@@ -127,6 +129,7 @@ class Dag:
         self.live = {i: d for i, d in nodes.items() if i not in self.merged}
         self.targets = [i for i, d in self.live.items() if field(d, "target") or str(field(d, "kind") or "").lower() == "target"]
         self.dist = {}
+        self.height = {}   # fewest dependency steps down to a Mathlib leaf
         dq = collections.deque((t, 0) for t in self.targets)
         while dq:
             i, k = dq.popleft()
@@ -137,6 +140,18 @@ class Dag:
                 c = self.resolve(c)
                 if c in self.live and c not in self.dist:
                     dq.append((c, k + 1))
+
+    def h(self, i: str, stack=()) -> int:
+        if i in self.height:
+            return self.height[i]
+        d = self.live.get(i)
+        if d is None or is_leaf(d):
+            return 0
+        if i in stack:
+            return 10**6
+        below = [self.h(c, stack + (i,)) for c in self.deps(i, "all")]
+        self.height[i] = 1 + (min(below) if below else 0)
+        return self.height[i]
 
     def resolve(self, i: str) -> str:
         seen = set()
@@ -164,7 +179,9 @@ class Dag:
         return out
 
     def stage2(self) -> tuple[list[tuple[int, int, str]], collections.Counter]:
+        """(priority, height, node): nearest to Mathlib first; the targets' statement closure first when the early review is on."""
         why = collections.Counter(); items = []; tsc = self.target_statement_closure()
+        early = li.config().get("SHEAF_EARLY_REVIEW", "") not in ("", "0", "no")
         for i, d in self.live.items():
             if is_leaf(d) or has_decl(d):
                 continue
@@ -172,7 +189,7 @@ class Dag:
                 why["waits for stage 1"] += 1; continue
             if not all(self.stated(c) for c in self.deps(i, "stmt")):
                 why["waits for a statement dependency"] += 1; continue
-            items.append((0 if i in tsc else 1, self.dist.get(i, 10**6), i))
+            items.append((0 if early and i in tsc else 1, self.h(i), i))
         return sorted(items), why
 
     def waiting(self) -> list[tuple[str, str]]:
@@ -202,8 +219,8 @@ def main() -> int:
     elif cmd == "items":
         for dist, i in s1:
             print(f"1\t{i}\t{dist if dist < 10**6 else '-'}\tsplit")
-        for pri, dist, i in s2:
-            print(f"2\t{i}\t{dist if dist < 10**6 else '-'}\t{'target-statement' if pri == 0 else 'state'}")
+        for pri, hgt, i in s2:
+            print(f"2\t{i}\t{hgt}\t{'target-statement' if pri == 0 else 'state'}")
     elif cmd == "waiting":
         for m, c in w:
             print(f"{m}\t{c}")
