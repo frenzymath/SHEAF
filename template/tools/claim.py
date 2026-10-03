@@ -2,7 +2,8 @@
 """Claims: which group is working on which module, so that no two agents work on the same one.
 
 Usage:
-  tools/claim.py next <group> [--count N]      claim up to N items from the head of coord/queue.tsv; prints one module per line
+  tools/claim.py next <group> [--count N] [--stage S]   claim up to N items from the head of coord/queue.tsv, of stage S only
+                                               if given; prints one item per line (a module, or a DAG node in stages 1 and 2)
   tools/claim.py take <group> <module>         claim a given module (also before changing someone else's statement)
   tools/claim.py renew <group> <module>        keep a claim alive during long work
   tools/claim.py done <group> <module> <note>  delivered; if the module still has `sorry`, it goes back to the queue
@@ -87,11 +88,13 @@ def take(who, m, quiet=False) -> bool:
     return False
 
 
-def queue():
+def queue(stage: str | None = None):
     q = WORK / "queue.tsv"
     if not q.exists():
         raise SystemExit("no coord/queue.tsv yet; the maintainer writes it after each build")
     rows = [l.split("\t") for l in q.read_text().splitlines() if l and not l.startswith("#")]
+    if stage is not None:
+        rows = [r for r in rows if len(r) > 1 and r[1] == stage]
     return [r[0] for r in rows]
 
 
@@ -103,9 +106,10 @@ def main() -> int:
     cmd = a[0]
     if cmd == "next":
         who = a[1]; n = int(a[a.index("--count") + 1]) if "--count" in a else 1
+        stage = a[a.index("--stage") + 1] if "--stage" in a else None
         n = min(n, LIMIT - len(held_by(who)))
         got = 0
-        for m in queue():
+        for m in queue(stage):
             if got >= n:
                 break
             if sorries(m) == 0:  # finished since the queue was written

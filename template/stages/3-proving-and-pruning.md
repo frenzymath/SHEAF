@@ -4,7 +4,7 @@
 
 ## 1. Who does what
 
-An item of this stage is a module that a target reaches and that contains `sorry`.
+An item of this stage is a module that a target reaches, that contains `sorry`, and whose node's proof dependencies all have a Lean declaration or are in Mathlib. A module whose proof would use a node that is not stated yet waits, listed as waiting in the queue, until stage 2 has stated that node. This stage goes from the targets downward.
 
 - The **maintainer** keeps the queue. It is computed from the imports in the Lean code, not from the DAG: the modules that `lean/TargetsCheck.lean` reaches and that contain `sorry`, in this order: the repairs in `coord/repairs.txt`, the statements marked `STATEMENT-DISPUTED`, then the rest, nearest to a target first. Proving from the top shows which nodes below are needed.
 - A **lead** claims modules and gives each to a worker.

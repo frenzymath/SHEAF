@@ -59,8 +59,9 @@ A single-file compile of a module cannot show its effect on other modules, becau
 
 | Tool | What it is for |
 |---|---|
-| `claim.py next / take / renew / done / release / mine / list / expire` | Claims on items, so that no two agents work on the same one. |
-| `queue.py write / summary / outside` | The work queue, `coord/queue.md` to read and `coord/queue.tsv` for `claim.py`: modules the targets need that still contain `sorry`, repairs and disputed statements first, then nearest to a target. `outside` lists the modules the targets do not need. |
+| `claim.py next [--stage N] / take / renew / done / release / mine / list / expire` | Claims on items, so that no two agents work on the same one. `next` takes from the head of the queue, or from one stage of it. |
+| `queue.py write / summary / outside` | The work queue, `coord/queue.md` to read and `coord/queue.tsv` for `claim.py`: the open items of every open stage, each with its stage. Stage 1 and 2 items come from the DAG through `dag_queue.py`; stage 3 items are the modules the targets need that still contain `sorry`, repairs and disputed statements first, then nearest to a target, and a module whose proof would use a node that has no declaration yet is listed as waiting and cannot be claimed. `outside` lists the modules the targets do not need. |
+| `dag_queue.py summary / items / waiting` | What `queue.py` reads from the DAG: the nodes still to split (stage 1), the nodes whose statement dependencies are all stated (stage 2), and the stated nodes whose proof uses an unstated node (the waiting modules of stage 3). It never lets a node be stated before the nodes its statement needs. The DAG layout is the project's own, so the field names it reads are in its `FIELDS` table at the top; the maintainer adapts them to the project's nodes, and `SHEAF_DAG` in `coord/sheaf.env` names the node directory when it is not `dag/nodes`. |
 | `session_health.sh` | One line per session of this project: OK, QUIET, STUCK, WAITING (a question or prompt on screen), LIMIT or DEAD. |
 
 ## Checking

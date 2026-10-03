@@ -4,12 +4,12 @@ You lead the group named in your first prompt, with at most the number of worker
 
 ## 1. Start-up
 
-Read `AGENTS.md`, this file, `roles/worker.md`, `SETUP.md`, `GOAL.md`, `coord/STATE.md`, the document of the current stage and `coord/queue.md`. Look at the claims and landings your group already has.
+Read `AGENTS.md`, this file, `roles/worker.md`, `SETUP.md`, `GOAL.md`, `coord/STATE.md`, the documents of the open stages and `coord/queue.md`. Look at the claims and landings your group already has.
 
 ## 2. The loop
 
-1. **Claim** items in the order of the queue, one per worker. An item is a DAG node in stages 1 and 2 and a module in stage 3 (§1 of the stage document). A claim says that your group works on an item, so that no other group does. Claim everything before it is changed, also what lies outside your item. Renew a claim during long work; release it, with a note, when the work is given up.
-2. **Brief** one worker per item, started as a sub-agent with the reasoning effort of `SETUP.md`. The brief names the item, its DAG node and its module if it has one, the group, the sandbox `lean/.sandbox/<group>/<item>/` and the files the worker may change, and tells the worker to read `AGENTS.md` and `roles/worker.md` first. Two workers never change the same file.
+1. **Claim** items in the order of the queue, one per worker. An item is a DAG node in stages 1 and 2 and a module in stage 3 (§1 of the stage document); the queue holds the items of every open stage, each marked with its stage. Claim from the stage the plan in `coord/STATE.md` assigns your group, or, if it assigns none, from the head of the queue. Never take an item the queue does not list, however ready it looks: a node that is not open is waiting for its dependencies. A claim says that your group works on an item, so that no other group does. Claim everything before it is changed, also what lies outside your item. Renew a claim during long work; release it, with a note, when the work is given up.
+2. **Brief** one worker per item, started as a sub-agent with the reasoning effort of `SETUP.md`. The brief names the item and its stage, its DAG node and its module if it has one, the group, the sandbox `lean/.sandbox/<group>/<item>/` and the files the worker may change, and tells the worker to read `AGENTS.md` and `roles/worker.md` first. Two workers never change the same file.
 3. **Review** each delivery (§3). Send back what does not pass, with the reason.
 4. **Land** what passes (§4), and close the claim. In stage 1 nothing is landed: the nodes are written into `dag/nodes/` directly.
 5. **Follow** your group's landings until the global build has verified them, and take up again one that was reverted (§4).

@@ -6,7 +6,7 @@ The project lives in a directory of its own, under the name the human gives it, 
 
 ## 1. Where the project stands
 
-If the directory of the project exists and `project/coord/STATE.md` names a stage, the project is running: read it and `project/coord/ledger.md`, restart the sessions that are missing (§5), and go to §6. Never start a second maintainer. Otherwise go on with §2.
+If the directory of the project exists and `project/coord/STATE.md` lists an open stage, the project is running: read it and `project/coord/ledger.md`, restart the sessions that are missing (§5), and go to §6. Never start a second maintainer. Otherwise go on with §2.
 
 ## 2. Settings and goal
 
@@ -25,7 +25,7 @@ Tell the human what will happen: you settle the settings and the targets with th
 
 ## 3. The plan
 
-**Agents.** The work has six parts: building and pushing (`project/roles/maintainer.md`); keeping the project running (§6); claiming items, reviewing deliveries and landing them (`project/roles/lead.md`); doing an item (`project/roles/worker.md`). The default is one maintainer and several leads. You start these sessions; the workers are sub-agents that each lead starts itself. Give each lead a number of workers that its agent can run at once and that it can still review, and start as many leads as it takes for all their workers together to reach the maximum number of concurrent subagents in `project/SETUP.md`. You may arrange the parts differently to fit `project/SETUP.md` and the agents available, as long as every part is done by some agent and building by exactly one. The mathematics and its formalization are the one part you may not take on: no DAG node and no Lean definition, statement or proof is written or reviewed by you or by a sub-agent that you start yourself. It is done by the sessions you start and by their sub-agents.
+**Agents.** The work has six parts: building and pushing (`project/roles/maintainer.md`); keeping the project running (§6); claiming items, reviewing deliveries and landing them (`project/roles/lead.md`); doing an item (`project/roles/worker.md`). The default is one maintainer and several leads. You start these sessions; the workers are sub-agents that each lead starts itself. Give each lead a number of workers that its agent can run at once and that it can still review, and start as many leads as it takes for all their workers together to reach the maximum number of concurrent subagents in `project/SETUP.md`. You may arrange the parts differently to fit `project/SETUP.md` and the agents available, as long as every part is done by some agent and building by exactly one. The stages overlap (`project/roles/maintainer.md` §6): the plan may assign groups to stages, and a group without an assignment claims from the head of the queue, which the maintainer's tools order. The mathematics and its formalization are the one part you may not take on: no DAG node and no Lean definition, statement or proof is written or reviewed by you or by a sub-agent that you start yourself. It is done by the sessions you start and by their sub-agents.
 
 **Several machines.** `project/AGENTS.md` §3 describes one library on one machine. To work on several machines, the human must provide a remote repository for `project/`, of their own and empty; record it in `project/SETUP.md`. Each machine has its own clone of SHEAF, its own clone of that repository as `project/`, its own launcher and its own maintainer: every maintainer merges the remote before it builds and pushes what it has built green. `project/SETUP.md` and the plan in `project/coord/STATE.md` get one entry per machine where the machines differ, and each machine has its own file in `project/coord/machines/`. Two machines must not work on the same item. Choose one way:
 
@@ -39,7 +39,7 @@ Write the plan into `project/coord/STATE.md`: the names of the sessions to start
 1. The agents need the Lean 4 skills (<https://github.com/cameronfreer/lean4-skills>). Install them if they are missing, and have the human enable them.
 2. Install `elan` if it is missing, after asking the human. Use the Mathlib version of `project/SETUP.md` and the Lean toolchain it pins. An existing project keeps its versions unless the human says otherwise.
 3. Set up the Lean project with Mathlib, or adopt the existing one, so that it is reached as `project/lean/` and `lake build` compiles every module of the library as well as `TargetsCheck.lean` and `Challenge.lean`. Write `project/coord/sheaf.env`, and `project/coord/machines/<host name>.env` if this machine needs settings of its own (`project/tools/README.md`). Check on a small file that the build and a single-file compile work.
-4. Set the stage in `project/coord/STATE.md` to `1-dag`. Create `project/coord/deliveries.log`, `project/coord/ledger.md`, `project/coord/claims/` and `project/coord/changes/`. Commit `project/`.
+4. Write `1-dag` as the open stage in `project/coord/STATE.md`. Create `project/coord/deliveries.log`, `project/coord/ledger.md`, `project/coord/claims/` and `project/coord/changes/`. Commit `project/`.
 
 ## 5. Starting the sessions
 

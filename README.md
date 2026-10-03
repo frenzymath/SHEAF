@@ -19,7 +19,7 @@ Clone this repository and start an agent in the root of the clone: Claude Code, 
 
 ## Pipeline
 
-All stages work on one object, a DAG of statements.
+All stages work on one object, a DAG of statements. They overlap: a node is stated as soon as it is split and the nodes its statement needs are stated, and proved as soon as the statements its proof uses exist, so the order of the dependencies, not the stage, decides what is done next.
 
 ![The three stages on a small DAG](docs/pipeline.gif)
 

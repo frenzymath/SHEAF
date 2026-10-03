@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This directory is one project: formalizing a paper in Lean 4, over Mathlib, with many agents working at once. Read this file first, then the document of your role and the document of the current stage, which `coord/STATE.md` names.
+This directory is one project: formalizing a paper in Lean 4, over Mathlib, with many agents working at once. Read this file first, then the document of your role and the documents of the stages that are open, which `coord/STATE.md` names. The three stages are three kinds of work on a node, and they overlap: which stage a node is in follows from its own state, never from a calendar (`roles/maintainer.md` §6).
 
 ## 1. Who you are
 

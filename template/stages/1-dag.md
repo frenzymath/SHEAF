@@ -19,7 +19,7 @@ Nodes are never deleted. Two nodes that state the same thing are merged: one is 
 
 ## 2. Who does what
 
-An item of this stage is a node that is not split yet.
+An item of this stage is a node that is not split yet. This stage goes from the targets downward. It is finished with a node when the node is a definition, a Mathlib leaf, or a statement whose proof is written in steps; stage 2 may then state the node while others are still being split (`roles/maintainer.md` §6).
 
 - The **maintainer** keeps the queue: the nodes that are neither Mathlib leaves nor split, nearest to a target first. If `SETUP.md` asks for an early review of the target statements, the nodes needed to state the targets come before all others. It starts with the targets. There is no Lean to build in this stage; in each cycle the maintainer brings the queue up to date, checks the new nodes against §6, and commits.
 - A **lead** claims nodes and gives each to a worker.

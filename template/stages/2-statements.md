@@ -4,19 +4,19 @@
 
 ## 1. Who does what
 
-An item of this stage is a node that is not in Mathlib and has no Lean declaration yet.
+An item of this stage is a node that stage 1 is finished with (`stages/1-dag.md` §2), that is not in Mathlib, that has no Lean declaration yet, and whose statement dependencies all have one or are in Mathlib. A node that fails the last condition is not open, however near a target it is.
 
-- The **maintainer** keeps the queue: the nodes whose dependencies are all formalized or in Mathlib, in the order of §2. It builds the library and verifies the landings as in every stage (`roles/maintainer.md`).
+- The **maintainer** keeps the queue: the open nodes, in the order of §2. It builds the library and verifies the landings as in every stage (`roles/maintainer.md`).
 - A **lead** claims nodes and gives each to a worker.
 - A **worker** writes the module of its node: the definition, or the statement with `sorry` as its proof (§3).
 - The lead reviews and lands it (`roles/lead.md`).
 
 ## 2. Order
 
-Every node that is not in Mathlib is formalized, whether the targets need it for their statements or for their proofs, and a node is formalized after the nodes it needs. Beyond that the order depends on `SETUP.md`:
+The order is set by the dependencies: a node is stated after the nodes its statement needs, so this stage climbs from Mathlib upward whatever order stage 1 and stage 3 keep. Stating from the targets downward is an error: a statement written before the definitions it uses exist cannot compile, and a queue ordered that way stops every worker. Every node that is not in Mathlib is formalized, whether the targets need it for their statements or for their proofs. Within what is open, the nodes needed to state the targets come first, so that `Challenge.lean` can be written and stage 3 can begin; then the open nodes nearest to a target. Beyond that, `SETUP.md` decides:
 
 - **The human asked for an early review of the target statements.** Formalize first only the targets and the nodes needed to state them, write `Challenge.lean`, review the targets (§4), and ask the human to confirm them (`coord/HUMAN.md`). Formalize the rest when they have.
-- **Otherwise** the order is free, and the targets are reviewed when their statements compile.
+- **Otherwise** the targets are reviewed when their statements compile, and nothing waits for it.
 
 ## 3. Statements
 

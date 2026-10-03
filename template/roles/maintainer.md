@@ -4,7 +4,7 @@ There is exactly one maintainer. You build the library, verify the landings, kee
 
 ## 1. Start-up
 
-Read `AGENTS.md`, this file, `SETUP.md`, `GOAL.md`, `coord/STATE.md` and the document of the current stage. Make sure no other maintainer runs.
+Read `AGENTS.md`, this file, `SETUP.md`, `GOAL.md`, `coord/STATE.md` and the stage documents. Make sure no other maintainer runs.
 
 ## 2. The cycle
 
@@ -25,7 +25,7 @@ A build is made of everything that has landed when it starts. What happens to a 
 When nothing has landed, the build waits and starts as soon as a landing arrives.
 
 1. **Merge.** If the project has a remote, fetch it and merge what arrived. If a large change would disturb landings under way, record it in `coord/ledger.md` and merge it in a later cycle.
-2. **Build.** In stage 1 there is no Lean code yet: commit the project and go to step 5. Otherwise make one build (§3).
+2. **Build.** While only stage 1 is open there is no Lean code yet: commit the project and go to step 5. Otherwise make one build (§3).
 3. **Green** means that the build succeeded. The compiled files are published to the groups, and the landings in the build are verified. If the project has a remote, push the commit that was built, after checking that it contains nothing unfit for publication.
 4. **Red** means that it failed. Nothing is published yet. Every round ends green: make the build green yourself and build the same snapshot again with your change, taking in nothing else that has landed meanwhile, until it is green. Most of the build is compiled already, so this is quick, and the groups get the rest of the round without waiting for the repair. For each module that failed, take the first of these that applies:
    - **The cause is mechanical**: a missing import, a declaration that was renamed or moved, a clash of names. Repair it.
@@ -55,7 +55,7 @@ The commit of the snapshot is exactly what was built, so it is the commit to pus
 The queue is the list of the items that are open, in the order in which they are to be claimed. The leads claim from it.
 
 1. Bring the queue up to date in every cycle, so that it lists exactly the items that are open in the project as it is.
-2. §1 of the document of the current stage says what an item is, which items are open, and their order. In stages 1 and 2 the items are found in the DAG, in stage 3 in the Lean code.
+2. §1 of each stage document says what an item of that stage is, when it is open, and its order. The queue holds the open items of every open stage, each marked with its stage. In stages 1 and 2 the items are found in the DAG, in stage 3 in the Lean code; the queue tool computes both, and holds back a stage-3 module whose proof would use a node that is not stated yet.
 3. Write it to `coord/queue.md`, one item per line. An item that a group has claimed stays in the queue; the claim says who works on it.
 4. Release the claims that have expired, so that their items can be claimed again.
 5. In stage 3, a module that the targets no longer reach has left the queue: it is pruned. Record that in the history of its node.
@@ -66,4 +66,6 @@ When a decision needs the human, write it under "Open" in `coord/HUMAN.md`, with
 
 ## 6. Stages and completion
 
-Every stage document ends with "Finished when". In every cycle, check it for the current stage. When it holds, record it in `coord/ledger.md` and write the next stage into `coord/STATE.md`. When stage 3 is finished the project is complete: record it in both files, and stop.
+The three stages are three kinds of work on a node, and they overlap. A node is stated as soon as stage 1 is finished with it and the nodes its statement needs are stated; a module is proved as soon as the targets are stated, so that `TargetsCheck.lean` exists, and the nodes its proof uses are stated. Which stage a node is in follows from its own state (§1 of each stage document), never from a calendar, and the order of the dependencies is never overridden: stage 1 runs from the targets downward, stage 2 from Mathlib upward, stage 3 from the targets downward. So stage 2 opens with the first node that can be stated and stage 3 with the first module that can be proved, while stage 1 may still be splitting elsewhere. A queue that states nodes from the targets downward, or states a node before stage 1 is finished with it, hands out items that cannot compile and stops every worker.
+
+`coord/STATE.md` lists the stages that have open or waiting items; keep it current. Every stage document ends with "Finished when". In every cycle, check it for each open stage; when it holds, record it in `coord/ledger.md` and remove the stage from `coord/STATE.md`. When stage 3 is finished the project is complete: record it in both files, and stop.
