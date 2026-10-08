@@ -4,7 +4,7 @@
 
 ## 1. Who does what
 
-An item of this stage is a node that stage 1 is finished with (`stages/1-dag.md` §2), that is not in Mathlib, that has no Lean declaration yet, and whose statement dependencies all have one or are in Mathlib. A node that fails the last condition is not open, however near a target it is.
+An item of this stage is a node that a target reaches, that stage 1 is finished with (`stages/1-dag.md` §2), that is not in Mathlib, that has no Lean declaration yet, and whose statement dependencies all have one or are in Mathlib. A node that fails the last condition is not open, however near a target it is.
 
 - The **maintainer** keeps the queue: the open nodes, in the order of §2. It builds the library and verifies the landings as in every stage (`roles/maintainer.md`).
 - A **lead** claims nodes and gives each to a worker.

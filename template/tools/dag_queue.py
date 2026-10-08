@@ -8,7 +8,7 @@ Usage:
 
 `queue.py write` calls this and puts the items into coord/queue.tsv; run this by hand only to look.
 
-What is open follows the stage documents. A node is open for
+What is open follows the stage documents. A node that no target reaches is not open for any stage. A node is open for
 
   stage 1  when it is a statement that is not a Mathlib leaf and has no proof in steps yet
            (it is still to be split); nearest to a target first;
@@ -167,7 +167,7 @@ class Dag:
         return d is None or is_leaf(d) or has_decl(d)   # a dependency on a missing node is reported by the DAG check, not here
 
     def stage1(self) -> list[tuple[int, str]]:
-        return sorted((self.dist.get(i, 10**6), i) for i, d in self.live.items() if not unfolded(d))
+        return sorted((self.dist[i], i) for i, d in self.live.items() if i in self.dist and not unfolded(d))
 
     def target_statement_closure(self) -> set[str]:
         out, st = set(), list(self.targets)
@@ -183,7 +183,7 @@ class Dag:
         why = collections.Counter(); items = []; tsc = self.target_statement_closure()
         early = li.config().get("SHEAF_EARLY_REVIEW", "") not in ("", "0", "no")
         for i, d in self.live.items():
-            if is_leaf(d) or has_decl(d):
+            if i not in self.dist or is_leaf(d) or has_decl(d):
                 continue
             if not unfolded(d):
                 why["waits for stage 1"] += 1; continue
@@ -218,7 +218,7 @@ def main() -> int:
         print(f"stage 3 waiting: {len(w)} stated modules whose proof uses a node without a declaration")
     elif cmd == "items":
         for dist, i in s1:
-            print(f"1\t{i}\t{dist if dist < 10**6 else '-'}\tsplit")
+            print(f"1\t{i}\t{dist}\tsplit")
         for pri, hgt, i in s2:
             print(f"2\t{i}\t{hgt}\t{'target-statement' if pri == 0 else 'state'}")
     elif cmd == "waiting":
