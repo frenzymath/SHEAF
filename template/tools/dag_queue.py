@@ -10,9 +10,11 @@ Usage:
 
 What is open follows the stage documents. A node that no target reaches is not open for any stage. A node is open for
 
-  stage 1  when it is a statement that is not a Mathlib leaf and has no proof in steps yet
-           (it is still to be split); nearest to a target first;
-  stage 2  when stage 1 is finished with it (it is a definition, or a statement with its proof in steps),
+  stage 1  when it is a statement that is not a Mathlib leaf and has no proof in steps yet, or a definition
+           that neither names the notions it is built from nor has its Lean written (it is still to be split);
+           nearest to a target first;
+  stage 2  when stage 1 is finished with it (a definition that names the notions it is built from or has its Lean
+           written, or a statement with its proof in steps),
            it has no Lean declaration yet, and every node its statement needs has one or is a Mathlib leaf;
            nearest to Mathlib first (the fewest dependency steps down to a Mathlib leaf), so that the
            statements climb from Mathlib upward. With SHEAF_EARLY_REVIEW=1 in coord/sheaf.env the nodes
@@ -100,9 +102,11 @@ def module_of(d):
 
 
 def unfolded(d) -> bool:
-    """Stage 1 is finished with the node: a leaf, a definition, or a statement whose proof is written in steps."""
-    if is_leaf(d) or is_def(d):
+    """Stage 1 is finished with the node: a leaf, a definition that names the notions it is built from or has its Lean written, or a statement whose proof is written in steps."""
+    if is_leaf(d):
         return True
+    if is_def(d):
+        return has_decl(d) or bool(deps_of(d, "stmt"))
     pf = field(d, "proof")
     return bool(pf) and (not isinstance(pf, list) or len(pf) > 0)
 
