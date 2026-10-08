@@ -58,7 +58,7 @@ The queue is the list of the items that are open, in the order in which they are
 2. §1 of each stage document says what an item of that stage is, when it is open, and its order. The queue holds the open items of every open stage, each marked with its stage. In stages 1 and 2 the items are found in the DAG, in stage 3 in the Lean code; the queue tool computes both, and holds back a stage-3 module whose proof would use a node that is not stated yet.
 3. Write it to `coord/queue.md`, one item per line. An item that a group has claimed stays in the queue; the claim says who works on it.
 4. Release the claims that have expired, so that their items can be claimed again.
-5. In stage 3, a module that the targets no longer reach has left the queue: it is pruned. Record that in the history of its node.
+5. In stage 3, a module that the targets no longer reach has left the queue: it is pruned. Record that as one line in `coord/ledger.md`.
 
 ## 5. The human
 

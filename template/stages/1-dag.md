@@ -13,7 +13,8 @@ A node is one definition or one statement, in one JSON file, in any layout. It r
 - for a statement that is not in Mathlib, a complete proof in steps, each step naming the nodes it uses (proof dependencies) or marked elementary;
 - whether the proof follows a document, with the document and the place, or was written by an agent;
 - the Mathlib searches made, with tool, query, results and date, and the Mathlib match if there is one;
-- a history of every replaced value and removed dependency, with date and reason.
+
+A node has no history field: the file's git history is the node's history. A change that needs a reason is one line in `coord/ledger.md` (date, id, what changed, why); nothing is copied into the node for the record.
 
 A statement is a proposition that can be judged true or false, or the definition of one mathematical object. It introduces its own objects rather than pointing at the objects another node constructed, and its source is a document and a place in it.
 
