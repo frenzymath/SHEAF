@@ -16,7 +16,7 @@ An item of this stage is a module that a target reaches, that contains `sorry`, 
 - The proof in the DAG is a plan. An item may be proved by any route, and the shortest is the best: a special case, a Mathlib lemma, a simpler argument.
 - A `sorry` that a new route leaves behind has a source and meets `AGENTS.md` §5. An idea without a source that would leave `sorry`s goes into the report, not into the library.
 - Once a proof compiles, remove the imports it does not use. A module that no target reaches any more leaves the queue and is never proved; its node records why.
-- A result the proof needs and the DAG lacks becomes a node, under the rules of stage 1.
+- A lemma the proof needs that another module could use becomes a node, under the rules of stage 1, with a module of its own that the proof imports, and is never `private`: a result with a name or a place in the literature, and also a general lemma about Mathlib's objects or about Lean that Mathlib lacks.
 
 ## 3. Changing a definition or a statement
 

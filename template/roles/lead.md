@@ -26,7 +26,7 @@ A delivery passes when:
 - new statements are true and exactly as strong as needed;
 - no definition is hollow, and every `sorry` meets `AGENTS.md` §5;
 - unused imports are removed;
-- the DAG nodes agree with the Lean code;
+- the DAG nodes agree with the Lean code, and every lemma the proof uses that another module could use has a node and a module of its own (`stages/3-proving-and-pruning.md` §2);
 - the report says where the brief, the DAG or earlier work was wrong.
 
 ## 4. Landing
