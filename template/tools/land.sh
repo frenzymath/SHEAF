@@ -2,8 +2,11 @@
 # Land one file from a sandbox into the library.
 # Usage: SHEAF_GROUP=<group> tools/land.sh <sandbox file> <library file>
 #
-# Steps: compile the sandbox file; write it into the library; compile it there; run import_prune_check.py; hand the
-# landing to the global build (landing.py), which verifies it together with everything that depends on it.
+# Steps: write the file into the library; if it changes what other modules see (a definition, a statement, an
+# instance or attribute, a removed import), compile it in its place; run import_prune_check.py; hand the landing to
+# the global build (landing.py), which verifies it together with everything that depends on it. A change to proofs
+# alone is not compiled again: the worker's single-file compile and the lead's review are its check, and the build
+# confirms it.
 # From the write until the checks have passed the landing is "in flight": a global build started then takes the
 # previous version of the file. If a check fails, the previous version is put back and the exit code is non-zero:
 # 1 does not compile, 2 usage, 3 refused by a check.
@@ -19,16 +22,23 @@ ok=0; for d in $SHEAF_LIB; do case "$DST" in "$SHEAF_LEAN/$d/"*|"$SHEAF_LEAN/$d.
 REL=${DST#"$SHEAF_LEAN/"}; MOD=${REL%.lean}; MOD=${MOD//\//.}
 T="$(dirname "$0")"
 
-echo "Compiling the sandbox file"
-"$T/lean_file.sh" "$SRC" || { echo "The sandbox file does not compile; nothing landed."; exit 1; }
-
 ID=$(python3 "$T/landing.py" begin "$SHEAF_GROUP" "$REL") || exit 3
 OLD="$SHEAF_ROOT/local/builds/backup/$ID/$REL"; [ -e "$OLD" ] || OLD=/dev/null
 mkdir -p "$(dirname "$DST")"; cp "$SRC" "$DST"
 giveup() { python3 "$T/landing.py" abort "$ID"; echo "$1; the library is unchanged."; exit "$2"; }
 
-echo "Compiling $MOD in the library"
-"$T/lean_file.sh" "$DST" || giveup "It does not compile in the library" 1
+CHANGES=$(python3 - "$T" "$OLD" "$DST" <<'PY'
+import pathlib, sys
+sys.path.insert(0, sys.argv[1]); import leanindex
+old = pathlib.Path(sys.argv[2]).read_text() if sys.argv[2] != "/dev/null" else ""
+new = pathlib.Path(sys.argv[3]).read_text() if pathlib.Path(sys.argv[3]).is_file() else ""
+print("\n".join(leanindex.interface_changes(old, new)))
+PY
+)
+if [ -n "$CHANGES" ]; then
+  echo "Changes what other modules see: $CHANGES"; echo "Compiling $MOD in the library"
+  "$T/lean_file.sh" "$DST" || giveup "It does not compile in the library" 1
+fi
 python3 "$T/import_prune_check.py" "$MOD" "$OLD" "$DST" || giveup "Refused (see above)" 3
 KIND=$(python3 "$T/landing.py" finish "$ID") || exit 2
 echo "Landed $MOD as landing $ID ($KIND). The next global build verifies it; see tools/landing.py status $ID."

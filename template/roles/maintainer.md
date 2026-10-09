@@ -32,7 +32,7 @@ When nothing has landed, the build waits and starts as soon as a landing arrives
    - **A proof fails.** Replace the proof by `sorry`, keeping the statement. List the module in `coord/repairs.txt` with the error and the landing that caused it; this puts it at the front of the queue, and a worker repairs it.
    - **A statement or a definition fails**, so that `sorry` cannot stand in for it. Revert the landing that caused it, with the reason and the errors; its group takes it up again.
 
-   Your changes are landings of your own, as group `M` (`roles/lead.md` §4).
+   Your changes are landings of your own, as group `M` (`roles/lead.md` §4): compile your own files single-file first, as a worker does.
 5. **After the build:**
    - write the queue (§4);
    - add to each stated module the imports of the proof dependencies stated since the last cycle (`stages/2-statements.md` §3), as a landing of your own;

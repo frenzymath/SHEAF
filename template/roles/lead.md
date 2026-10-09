@@ -35,12 +35,12 @@ Landing is the only way a file enters the library. To land a file means, in this
 
 1. the file compiles in the sandbox;
 2. it is written to its place in the library, and the previous version is kept;
-3. it compiles in its place;
+3. if it changes what other modules see, a definition, a statement, an instance or attribute, a removed import, it compiles in its place; a change to proofs alone is not compiled again;
 4. as far as the sources show, it breaks no other module: it removes no import and no declaration that another module uses, and closes no import cycle;
 5. it repeats nothing: no name and no theorem statement that the library already has. If one exists already, the existing declaration is used;
 6. if any of this fails, the previous version is put back, and the library is unchanged. Give the delivery back to its worker with the message of the failed step, and land it again when it is repaired; the claim stays yours meanwhile;
 7. if all of it holds, the landing is recorded and waits for the global build.
 
-A change to a statement or definition that other modules use is landed as one set with the modules adapted to it: all files are written together, and all are put back together.
+A change to a statement or definition that other modules use is landed as one set with the modules adapted to it: all files are written together, and all are put back together. Of the set, the files that change what other modules see and the files that import them compile in place; the others are not compiled again.
 
 Landing checks the landed files alone, since the modules that import them still load their old compiled version. The global build compiles those modules. It starts over at once for a landing that changes what other modules see. If it fails because of a landing, the maintainer makes the build green again. It may replace a proof that fails by `sorry`, which puts the module at the front of the queue as a repair. If a statement or definition of the landing fails, it reverts the whole landing and gives the reason; the work is still in the sandbox: claim the item again, give it back to a worker with the reason and the errors of the build, and land it again when it is repaired.

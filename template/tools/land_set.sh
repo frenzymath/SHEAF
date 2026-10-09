@@ -4,8 +4,9 @@
 # Usage: SHEAF_GROUP=<group> tools/land_set.sh <set directory>
 #   The set directory is under lean/.sandbox/<group>/ and mirrors paths relative to lean/;
 #   a file whose first line is `-- DELETE` deletes that library file.
-# Steps: write every file; compile the files of the set, in the order of their imports, each within the single-file
-# limit; run import_prune_check.py on every file; hand the set to the global build as one interface landing
+# Steps: write every file; compile, in the order of their imports and each within the single-file limit, the files
+# that change what other modules see (a definition, a statement, an instance or attribute, a removed import) and the
+# files of the set that import them; run import_prune_check.py on every file; hand the set to the global build as one interface landing
 # (landing.py). The script does not build the modules downstream of the set: the maintainer's build starts over as
 # soon as the set has landed and verifies all of them. If that build fails because of the set, the maintainer reverts
 # the whole set, and tools/landing.py mine <group> shows it with the reason.
@@ -35,7 +36,27 @@ done
 giveup() { python3 "$T/landing.py" abort "$ID"; echo "$1; every file of the set was put back."; exit "$2"; }
 
 mapfile -t ORDER < <(python3 "$T/landing.py" order "${FILES[@]}") || giveup "The set cannot be ordered" 3
-for f in "${ORDER[@]}"; do
+# The files to compile: those that change what other modules see, and the files of the set that import them.
+mapfile -t TOCOMPILE < <(python3 - "$T" "$BK" "$SHEAF_LEAN" "${ORDER[@]}" <<'PY'
+import pathlib, sys
+sys.path.insert(0, sys.argv[1]); import leanindex
+bk, lib, order = pathlib.Path(sys.argv[2]), pathlib.Path(sys.argv[3]), sys.argv[4:]
+mod = {f: f[:-5].replace("/", ".") for f in order}
+new = {f: (lib / f).read_text() if (lib / f).is_file() else "" for f in order}
+need = set()
+for f in order:
+    old = (bk / f).read_text() if (bk / f).is_file() else ""
+    for c in leanindex.interface_changes(old, new[f]):
+        print(f"Changes what other modules see: {f}: {c}", file=sys.stderr); need.add(f)
+for f in order:  # import order, so one pass finds every file of the set that imports a changed one
+    if f not in need and any(mod[g] in leanindex.imports_of(new[f]) for g in need):
+        need.add(f)
+for f in order:
+    if f in need and new[f]:
+        print(f)
+PY
+)
+for f in "${TOCOMPILE[@]}"; do
   echo "Compiling $f"
   "$T/lean_file.sh" "$SHEAF_LEAN/$f" || giveup "$f does not compile" 1
 done
