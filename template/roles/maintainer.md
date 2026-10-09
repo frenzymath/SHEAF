@@ -35,6 +35,7 @@ When nothing has landed, the build waits and starts as soon as a landing arrives
    Your changes are landings of your own, as group `M` (`roles/lead.md` §4).
 5. **After the build:**
    - write the queue (§4);
+   - add to each stated module the imports of the proof dependencies stated since the last cycle (`stages/2-statements.md` §3), as a landing of your own;
    - check the DAG nodes added or changed since the last cycle against `stages/1-dag.md` §6, and tell the group that owns a node what fails;
    - write one line in `coord/ledger.md`: time, result, landings reverted, fixes, commit pushed.
 
