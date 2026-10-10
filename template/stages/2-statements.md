@@ -26,7 +26,7 @@ The order is set by the dependencies: a node is stated after the nodes its state
 4. One module per node. Directories follow Mathlib's topics; what is specific to the paper goes under `Paper/`, the targets under `Targets/`.
 5. Every module, definition and statement has a docstring with its source. The docstring of a statement carries the proof of its node.
 6. Record in the node its module, its declaration and its Lean statement.
-7. The module imports the modules of the node's statement dependencies and of its proof dependencies, so that what the targets reach through imports is the whole plan of the DAG. A proof dependency that is not stated yet is imported once it is: the maintainer adds the missing imports in each cycle.
+7. The module imports the modules of the node's statement dependencies and of those proof dependencies that are stated, so that what the targets reach through imports is the whole plan of the DAG. An import of a module that is landed but not built yet fails in a single-file compile until the next global build; that is not an error, and not a reason to release the claim (`roles/worker.md` §2). When a node is stated, the worker who states it adds, in the same delivery, the import of its module to every module whose node lists it as a proof dependency, also when another group holds that module: that one line, and nothing else.
 
 ## 4. The targets
 
