@@ -2,8 +2,13 @@
 """Claims: which group is working on which module, so that no two agents work on the same one.
 
 Usage:
-  tools/claim.py next <group> [--count N] [--stage S]   claim up to N items from the head of coord/queue.tsv, of stage S only
-                                               if given; prints one item per line (a module, or a DAG node in stages 1 and 2)
+  tools/claim.py next <group> [--count N] [--stage S] [--after ITEM]
+                                               claim up to N items from the head of coord/queue.tsv, of stage S only if given;
+                                               with --after, the open items connected to ITEM in the DAG come first (what its
+                                               proof or statement uses, and what uses it), in queue order, then the head;
+                                               without it, items none of whose neighbours is claimed come first, since the
+                                               worker of a claimed neighbour goes on into them;
+                                               prints one item per line (a module, or a DAG node in stages 1 and 2)
   tools/claim.py take <group> <module>         claim a given module (also before changing someone else's statement)
   tools/claim.py renew <group> <module>        keep a claim alive during long work
   tools/claim.py done <group> <module> <note>  delivered; if the module still has `sorry`, it goes back to the queue
@@ -88,14 +93,72 @@ def take(who, m, quiet=False) -> bool:
     return False
 
 
-def queue(stage: str | None = None):
+_index = None
+
+
+def dag_index():
+    """(nodes, module -> node id, node id -> nodes that use it), read once per process; None without a DAG."""
+    global _index
+    if _index is None:
+        import dag_queue
+        try:
+            nodes = dag_queue.load()
+        except SystemExit:
+            _index = ({}, {}, {}, None)
+            return _index
+        g = dag_queue.Dag(nodes)
+        users = {}
+        for j in g.live:
+            for c in g.deps(j, "all"):
+                users.setdefault(c, set()).add(j)
+        by_module = {dag_queue.module_of(d): i for i, d in nodes.items() if dag_queue.module_of(d)}
+        _index = (nodes, by_module, users, g)
+    return _index
+
+
+def connected(item: str) -> set[str]:
+    """The nodes and modules one dependency edge away from `item` (a node id or a module) in the DAG."""
+    import dag_queue
+    nodes, by_module, users, g = dag_index()
+    nid = item if item in nodes else by_module.get(item)
+    if nid is None or g is None:
+        return set()
+    rel = (set(g.deps(nid, "all")) if nid in g.live else set()) | users.get(nid, set())
+    out = set(rel)
+    for j in rel:
+        m = dag_queue.module_of(nodes.get(j, {}))
+        if m:
+            out.add(m)
+    return out
+
+
+def claimed_now() -> set[str]:
+    out = set()
+    for p in C.glob("*.lock"):
+        m = p.stem.replace("__", "/")
+        r = read(m)
+        if r and not expired(r):
+            out.add(m)
+    return out
+
+
+def queue(stage: str | None = None, after: str | None = None):
     q = WORK / "queue.tsv"
     if not q.exists():
         raise SystemExit("no coord/queue.tsv yet; the maintainer writes it after each build")
     rows = [l.split("\t") for l in q.read_text().splitlines() if l and not l.startswith("#")]
     if stage is not None:
         rows = [r for r in rows if len(r) > 1 and r[1] == stage]
-    return [r[0] for r in rows]
+    items = [r[0] for r in rows]
+    if after:
+        rel = connected(after)
+        items = [m for m in items if m in rel] + [m for m in items if m not in rel]
+    else:
+        # a fresh worker leaves alone what a claimed neighbour's worker will go on into
+        busy = claimed_now()
+        quiet = [m for m in items if not (connected(m) & busy)]
+        items = quiet + [m for m in items if m not in quiet]
+    return items
 
 
 def main() -> int:
@@ -107,9 +170,10 @@ def main() -> int:
     if cmd == "next":
         who = a[1]; n = int(a[a.index("--count") + 1]) if "--count" in a else 1
         stage = a[a.index("--stage") + 1] if "--stage" in a else None
+        after = a[a.index("--after") + 1] if "--after" in a else None
         n = min(n, LIMIT - len(held_by(who)))
         got = 0
-        for m in queue(stage):
+        for m in queue(stage, after):
             if got >= n:
                 break
             if sorries(m) == 0:  # finished since the queue was written

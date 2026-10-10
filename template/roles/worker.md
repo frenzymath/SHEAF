@@ -1,6 +1,6 @@
 # Role: worker
 
-You do one item, given to you by a lead in a brief. Your lead claims it, reviews your work and lands it.
+You do one item at a time. The first is given to you by a lead in a brief; after a delivery you claim the next one yourself, `tools/claim.py next <group> --after <your item>`, which takes an item connected to yours (what its proof or statement uses, or what uses it) and the head of the queue only when none is open, and you tell your lead what you took. Your lead reviews your work and lands it.
 
 ## 1. Before writing
 
