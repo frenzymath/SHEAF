@@ -1,6 +1,6 @@
 # HUMAN
 
-Questions that need the human. The maintainer and the launcher write them under "Open"; the launcher brings each to the human at once and moves it under "Answered" with the answer. The agent that asked acts on the answer, writes one line in `coord/ledger.md`, and then deletes the question and its answer from this file; what the human decided for the rest of the run is in `SETUP.md`. The file holds only what is still open or not yet acted on.
+Questions that need the human. The main agent writes them under "Open", brings each to the human at once and moves it under "Answered" with the answer. The main agent acts on the answer, writes one line in `coord/ledger.md`, and then deletes the question and its answer from this file; what the human decided for the rest of the run is in `SETUP.md`. The file holds only what is still open or not yet acted on.
 
 ## Open
 

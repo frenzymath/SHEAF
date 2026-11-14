@@ -5,7 +5,7 @@
 # - The time limit is SHEAF_FILE_TIMEOUT, default 60 s.
 # - A library file compiled here writes its .olean into the group's private mirror local/build/<group>/ of the shared build,
 #   so the group's later compiles can import a module it has just landed, before the next global build.
-#   The shared build itself is only written when a green global build is published (build.py); a compile waits while
+#   The shared build itself is only written when a passing global build is published (build.py); a compile waits while
 #   that is happening, and one that fails while it happened is run again once.
 source "$(dirname "$0")/sheaf_env.sh"
 F=${1:?usage: tools/lean_file.sh <file.lean>}; [ -f "$F" ] || { echo "no such file: $F"; exit 2; }

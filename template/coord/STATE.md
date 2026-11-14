@@ -1,13 +1,19 @@
 # STATE
 
-The current state of the run. Only the launcher and the maintainer write here, each in its own section; everyone else reads it. Each section is rewritten to the present state, never appended to. Questions for the human go to `coord/HUMAN.md`, history to `coord/ledger.md`.
+The current state of the run, written by the main agent and rewritten to the present state, never appended to. What is open in each stage is in `coord/queue.md`, which the code writes. Questions for the human go to `coord/HUMAN.md`, history to `coord/ledger.md`.
 
-## Stages open
+## Running
 
-Written by the launcher at the start (`1-dag`), then kept current by the maintainer: every stage that has open or waiting items, since the stages overlap (`roles/maintainer.md` §6).
+The processes of the project (`tools/README.md` § Running the project), the machine they run on, and the settings of `coord/dispatch.json` that differ from the defaults, with why.
 
 (not started)
 
-## Plan
+## Compiling
 
-Written by the launcher: the names of the sessions of the project.
+The layout of `skills/compiling/SKILL.md`, the measurements it was chosen from, and that the human confirmed them.
+
+(not chosen: the default, one frozen repository. The statements in the library are frozen.)
+
+## Decisions
+
+What the main agent decided that the code could not, and is still in force.

@@ -19,7 +19,7 @@ Usage:
   tools/build.py           build until one build completes; exit 0 green or nothing to build, 1 red, 2 cannot start.
                            When nothing has landed, it waits for the next landing (at most SHEAF_BUILD_WAIT seconds,
                            default 600) and builds as soon as it arrives.
-  tools/build.py --retry   after a red build: build the same snapshot again with the maintainer's own landings
+  tools/build.py --retry   after a red build: build the same snapshot again with the main agent's own repairs
                            (group M) and without the landings reverted, taking in nothing else that has landed
   tools/build.py status    the last result and the landings waiting
 Results: local/builds/last.json, the log in local/build.log.
@@ -276,7 +276,7 @@ def main() -> int:
         for s in sus[:12]:
             print(f"  {s['id']}  {s['kind']:9} {s['group']:6} {' '.join(s['modules'][:4])}"
                   + (f"  -> fails {' '.join(s['fails'][:3])}" if s["fails"] else ""))
-    print("Make it green (roles/maintainer.md §2) and run tools/build.py --retry.")
+    print("Repair the build and run tools/build.py --retry.")
     if sus:
         print("To give a landing back: tools/landing.py revert <id> <reason>.")
     return 1

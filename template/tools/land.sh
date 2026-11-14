@@ -5,7 +5,7 @@
 # Steps: write the file into the library; if it changes what other modules see (a definition, a statement, an
 # instance or attribute, a removed import), compile it in its place; run import_prune_check.py; hand the landing to
 # the global build (landing.py), which verifies it together with everything that depends on it. A change to proofs
-# alone is not compiled again: the worker's single-file compile and the lead's review are its check, and the build
+# alone is not compiled again: the worker's single-file compile is its check, and the build
 # confirms it.
 # From the write until the checks have passed the landing is "in flight": a global build started then takes the
 # previous version of the file. If a check fails, the previous version is put back and the exit code is non-zero:

@@ -22,12 +22,11 @@ Nodes are never deleted. Two nodes that state the same thing are merged: one is 
 
 ## 2. Who does what
 
-An item of this stage is a node that a target reaches and that is not split yet. This stage goes from the targets downward. It is finished with a node when the node is a Mathlib leaf, a statement whose proof is written in steps, or a definition that names the notions it is built from or is written in Lean from Mathlib alone with a body of at most ten lines; stage 2 may then state the node while others are still being split (`roles/maintainer.md` §6).
+An item of this stage is a node that a target reaches and that is not split yet. This stage goes from the targets downward. It is finished with a node when the node is a Mathlib leaf, a statement whose proof is written in steps, or a definition that names the notions it is built from or is written in Lean from Mathlib alone with a body of at most ten lines; stage 2 may then state the node while others are still being split (`AGENTS.md` §1).
 
-- The **maintainer** keeps the queue: the nodes that are neither Mathlib leaves nor split, nearest to a target first. If `SETUP.md` asks for an early review of the target statements, the nodes needed to state the targets come before all others. It starts with the targets. There is no Lean to build in this stage; in each cycle the maintainer brings the queue up to date, checks the new nodes against §6, and commits.
-- A **lead** claims nodes and gives each to a worker.
-- A **worker** splits its node by one level (§3) and writes the nodes directly into `dag/nodes/`. It changes no node that is not its own; what it finds wrong in another node goes into its report.
-- The lead reviews the node: the proof follows its source, every step names what it uses, every new node was searched in Mathlib, and no new node repeats an existing one.
+- `tools/tasks.py` opens a task for every node that is neither a Mathlib leaf nor split, nearest to a target first, starting with the targets. A node a new delivery adds opens at once.
+- A **worker** splits its node by one level (§3) and delivers the nodes (`roles/worker.md` §3). It changes no node that is not its own; what it finds wrong in another node goes into its report.
+- `tools/accept.py` writes the nodes into `dag/nodes/` when every node they use exists, no cycle is closed and the item is split. The rest of §3 and §4 is the worker's responsibility: the proof follows its source, every step names what it uses, every new node was searched in Mathlib, and no new node repeats an existing one.
 
 ## 3. Splitting
 
