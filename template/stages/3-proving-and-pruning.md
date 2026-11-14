@@ -19,7 +19,7 @@ An item of this stage is a module that contains `sorry`, that a target reaches, 
 
 ## 3. Changing a definition or a statement
 
-Any worker may change a definition or an intermediate statement that turns out to be wrong or hard to use.
+Any worker may change a definition or an intermediate statement that turns out to be wrong or hard to use, unless the statements are frozen (`AGENTS.md` §3).
 
 1. Change in a module that is not your item only what the adaptation requires, and name it in the record of step 3. Another worker may hold that module: deliver complete files built on the version in the library, and say in your report which modules of others you adapted.
 2. List the modules that depend on it, and check for each that what it states does not become weaker, stronger or different.

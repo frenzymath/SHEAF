@@ -7,8 +7,8 @@
 # Steps: write every file; compile, in the order of their imports and each within the single-file limit, the files
 # that change what other modules see (a definition, a statement, an instance or attribute, a removed import) and the
 # files of the set that import them; run import_prune_check.py on every file; hand the set to the global build as one interface landing
-# (landing.py). The script does not build the modules downstream of the set: the maintainer's build starts over as
-# soon as the set has landed and verifies all of them. If that build fails because of the set, the maintainer reverts
+# (landing.py). The script does not build the modules downstream of the set: the global build starts over as
+# soon as the set has landed and verifies all of them. If that build fails because of the set, the main agent reverts
 # the whole set, and tools/landing.py mine <group> shows it with the reason.
 # From the write until the checks have passed the set is "in flight": a global build started then takes the previous
 # version of its files. If a check fails, every file is put back.

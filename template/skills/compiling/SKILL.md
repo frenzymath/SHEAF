@@ -16,13 +16,15 @@ Only the machine's resources against the number of workers. Measure on this proj
 
 Then compare what each layout below needs with what the machine has, for the number of workers you intend to run.
 
+The main agent goes through the measurements with the human, and the two of them confirm what the machine can give before a layout is chosen: the human may know of other jobs on the machine, limits of its memory, or a larger machine to come. Until they have confirmed it, and whenever they are unsure, the project uses the safest layout, one frozen repository, which needs the least of the machine. It is the default submit command, and `coord/STATE.md` starts with it.
+
 ## 2. Two kinds of change
 
 A change to a file either changes only proofs, or changes what other modules see: a statement, a definition, an instance or attribute, a removed import, a deleted module. A proof change affects no other file, and a single-file compile against the built library checks it. A statement change can break every module that depends on it, and only a build of those modules checks it. Every layout below follows from handling the two kinds separately.
 
 ## 3. The layouts
 
-**Resources far beyond the workers: one worktree per worker.** There is one main repository. Every worker has its own worktree of it and runs `lake build` there while it works. A finished delivery goes to the main repository as a pull request, and the managing agent below builds it into the main repository. Statement changes need no special path here, since every batch is built with everything that depends on it.
+**Resources far beyond the workers: one worktree per worker.** There is one main repository. Every worker has its own worktree of it, as the `lean/` of its sandbox, and runs `lake build` there while it works. A finished delivery goes to the main repository as a pull request, and the managing agent below builds it into the main repository. Statement changes need no special path here, since every batch is built with everything that depends on it.
 
 **Resources far below the workers: one frozen repository.** There is a single Lean repository, and a statement is frozen once it is in. Workers add new files and new declarations, and change only the proofs of declarations that exist. A proof change is checked by a single-file compile against the repository's compiled files. New statements are checked by compiling the new files together, in the order of their imports; since nothing that exists changes, no other module needs a rebuild. A statement found wrong is not changed: it is replaced by a new declaration, and its users move to the new one, which is expensive when a long chain depends on it.
 

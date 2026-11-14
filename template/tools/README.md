@@ -51,14 +51,16 @@ And these, which the processes call or a human or the main agent runs to look:
 |---|---|
 | `tasks.py gen / refresh / list / show / summary / add` | The tasks, `coord/tasks/<task>.json`, and the readable view `coord/queue.md`. `gen` computes what is open in all three stages; `refresh <node>…` does it for these nodes and the nodes that use them, after an event; Besides the items of the stages it opens the work around them: target reviews and their fixes, `Challenge.lean`, corrections of disputed statements, diagnoses of tasks that failed 5, 10, 20, 40 times. `add` writes a task of the main agent's own. The state of each task is the last line of `coord/tasks/events.tsv` that names it. |
 | `accept.py <task> <group>` | Checks a delivery and, if it passes, puts it in: the nodes into the DAG, the Lean files through the submit command. It answers only by its exit code, accepted or not; `dispatch.py` then has `tasks.py settle` handle the task from that code: done, or back to the list with the reason, and what the result opens or closes. |
-| `submit.sh <group> <dir> <file>…` | The default submit command: how a delivery's Lean files enter the library. It calls `land.sh` or `land_set.sh` below. `submit_cmd` in `coord/dispatch.json` replaces it with the command of the layout chosen in `skills/compiling/SKILL.md`. |
+| `submit_frozen.py [--pr] <group> <dir> <file>…` | The default submit command, and the one of the layouts with frozen statements: compiles the files in import order against the library's compiled files and puts sources and compiled files in. A statement change is refused, or with `--pr` (the layout with isolation repositories) sent to the managing agent as a pull request. Without `--pr` it is the safest layout, and stays the default until the main agent and the human have confirmed the machine's resources and chosen a layout in `skills/compiling/SKILL.md`; `submit_cmd` in `coord/dispatch.json` then names the chosen command. |
 | `submit_pr.sh <group> <dir> <file>…` | The submit command of the layout with one worktree per worker: the files become a pull request to the main repository, and it waits until the managing agent merges it or sends it back. Each waiting submission holds an acceptance, so `accept_slots` must be about `slots`. |
-| `submit_frozen.py [--pr] <group> <dir> <file>…` | The submit command of the layouts with frozen statements: compiles the files in import order against the library's compiled files and puts sources and compiled files in. A statement change is refused, or with `--pr` (the layout with isolation repositories) sent to the managing agent as a pull request. |
+| `submit.sh <group> <dir> <file>…` | The submit command of SHEAF's first application: one library, a delivery landed by `land.sh` or `land_set.sh` below and verified afterwards by the global build. A change to proofs alone enters without a compile, which `skills/compiling/SKILL.md` does not allow: change that before using it. |
 | `prs.py open / wait / list / apply / close` | The pull requests to the managing agent: `list` shows each with what it changes for other modules, `apply` writes chosen ones into the managing agent's copy, `close` merges or sends back. Building and merging the batch is the managing agent's work. |
 | `worker_prompt.md` | The prompt a worker starts with, and the one for its next task in the same session. |
 | `coord/attention.md` | Not a tool: where the code writes what it cannot decide. A high-risk worker, the report of a diagnosis, a dispatcher error. |
 
 ## Compiling and landing
+
+`lean_file.sh` is used in every layout; the other tools of this section and the global build below are those of `submit.sh`.
 
 | Tool | What it is for |
 |---|---|
@@ -66,7 +68,7 @@ And these, which the processes call or a human or the main agent runs to look:
 | `land.sh <sandbox file> <library file>` | Put a finished file into the library. Compiles it in place when it changes what other modules see; a change to proofs alone enters on the worker's compile. Refuses it (putting the old version back) if it removes an import or a declaration some other module still needs, adds a name another module already declares, adds a theorem whose statement the library already states word for word, or closes an import cycle. |
 | `land_set.sh <set directory>` | Put a set of files into the library at once: a changed statement or definition together with the modules adapted to it. Compiles in place the files that change what other modules see and the files of the set that import them, and runs the same checks on each file; the modules downstream of the set are compiled by the global build, which starts over as soon as the set has landed. |
 | `landing.py status / mine <group> / revert <id> <reason>` | The landings that are being checked or wait for the global build, and the last build's result; a group's open and reverted landings; `revert` is for repairing a failed build. |
-| `build.py [--retry]` | The global build (§ The global build). When nothing has landed it waits for the next landing, and builds as soon as it arrives. After a red build, `--retry` builds the same snapshot again with the maintainer's own landings and without the landings it reverted, and nothing else. |
+| `build.py [--retry]` | The global build (§ The global build). When nothing has landed it waits for the next landing, and builds as soon as it arrives. After a failed build, `--retry` builds the same snapshot again with the main agent's own repairs and without the landings it reverted, and nothing else. |
 
 A single-file compile of a module cannot show its effect on other modules, because they still load its old `.olean`. That is why landing runs `import_prune_check.py`, and why every landing is verified afterwards by the global build. The check reads source text: it does not see a removed import that only provided an instance, which the build shows.
 
@@ -100,7 +102,7 @@ The groups and the build talk through records in `local/builds/`, the way claims
 |---|---|---|
 | `inflight/<id>.json` | `land.sh`, `land_set.sh`, when they write the files | The group is still checking the landing. A build started now takes the previous version of its files, from `backup/<id>/`. |
 | `requests/<id>.json` | the same scripts, when the checks have passed | The landing waits for a build. Its kind is `interface` when it changes what other modules see (a statement, a definition, an instance or attribute, a removed import, a deleted module, any set), otherwise `proof`. |
-| `done/<id>.json` | `build.py` after a green build, or `landing.py revert` | Verified, with the commit; or reverted, with the reason. Kept for a week. |
+| `done/<id>.json` | `build.py` after a passing build, or `landing.py revert` | Verified, with the commit; or reverted, with the reason. Kept for a week. |
 | `last.json` | `build.py` | The last build: result, commit, failing modules, and the landings that may have caused them. |
 
 One build:
@@ -108,7 +110,7 @@ One build:
 1. **Snapshot**, holding `local/tree.lock` for a few seconds: commit the tree, copy the sources into the copy, replace the files of in-flight landings by their previous version, and note which requests the snapshot contains.
 2. **Build** the copy with `lake build`.
 3. **Start over** when an `interface` request arrives while the running build contains none: that landing is the one most likely to break other modules, and the groups should learn it soon. A build that contains an interface landing is never stopped; what arrives during it waits for the next build. So a build is stopped at most once.
-4. **Green**: publish. The changed compiled files are copied into `lean/.lake/build`, each written completely before it replaces the old one; `local/PUBLISHING` exists meanwhile, and single-file compiles wait for it. The requests of the snapshot move to `done/`.
-   **Red**: nothing is published. `build.py` prints the failing modules and, for each, the landings of the snapshot it depends on, interface landings first. The build is repaired and `build.py --retry` run. `landing.py revert` puts a landing's files back, unless one of them was changed again since.
+4. **Passed**: publish. The changed compiled files are copied into `lean/.lake/build`, each written completely before it replaces the old one; `local/PUBLISHING` exists meanwhile, and single-file compiles wait for it. The requests of the snapshot move to `done/`.
+   **Failed**: nothing is published. `build.py` prints the failing modules and, for each, the landings of the snapshot it depends on, interface landings first. The build is repaired and `build.py --retry` run. `landing.py revert` puts a landing's files back, unless one of them was changed again since.
 
 The first build in a new copy may compile the whole library once.

@@ -6,17 +6,17 @@ Every landing is a record that moves through local/builds/, the way a claim is a
   inflight/<id>.json   the files are written, the group is still checking them (single-file compiles, text checks);
                        a build started now takes the previous version of these files
   requests/<id>.json   the landing is complete and waits for a global build to verify it
-  done/<id>.json       verified by a green build, or reverted by the maintainer, with the reason
+  done/<id>.json       verified by a passing build, or reverted by the main agent, with the reason
   backup/<id>/…        the previous version of every file of the landing, kept until it is verified
 
 A landing is of kind `interface` when it changes what other modules see: a statement, a definition, an instance or
 an attribute, a removed import, a deleted module, or any set landed with land_set.sh. Otherwise it is of kind `proof`.
-An interface landing makes the maintainer's build start over at once (build.py), so that it is verified first.
+An interface landing makes the global build start over at once (build.py), so that it is verified first.
 
 Usage:
   tools/landing.py status [<id>]            all open landings and the last build, or one landing
   tools/landing.py mine <group>             the group's landings that are open or were reverted
-  tools/landing.py revert <id> <reason>     (the maintainer) put back the previous version of every file of a landing
+  tools/landing.py revert <id> <reason>     (the main agent) put back the previous version of every file of a landing
                                             that a build showed to be wrong; refused if a file changed since
 Called by the landing scripts, not by hand:
   tools/landing.py begin <group> <file>…    files relative to lean/; prints the id

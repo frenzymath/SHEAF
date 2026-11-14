@@ -1,9 +1,9 @@
 #!/bin/bash
-# The default submit command of tools/accept.py: puts a delivery's Lean files into the library.
+# The submit command of SHEAF's first application: puts a delivery's Lean files into one library, verified afterwards
+# by the global build (tools/build.py). It is not the default: a change to proofs alone enters without a compile, which
+# skills/compiling/SKILL.md §4 does not allow; change that before using it.
 # Usage: tools/submit.sh <group> <sandbox lean directory> <file under lean/>...
 # One file lands with tools/land.sh, several as one set with tools/land_set.sh. Exit 0: the files are in the library.
-# How deliveries are compiled depends on the machine (skills/compiling/SKILL.md): replace this command
-# (submit_cmd in coord/dispatch.json) with the one of the layout chosen there.
 set -u
 T=$(cd "$(dirname "$0")" && pwd)
 G=$1; DIR=$2; shift 2

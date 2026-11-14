@@ -5,7 +5,7 @@
 # once under `TargetsCheck` (which imports the library's target modules), compares the hashes of the elaborated types
 # and universe parameters, and prints the axioms of each target in the library.
 # Comparing elaborated types, not source text, also catches a change hidden behind `let … :=` or a changed notation.
-# Needs up-to-date .olean files of Challenge and TargetsCheck, so run it after a green build.
+# Needs up-to-date .olean files of Challenge and TargetsCheck, so run it after a passing build.
 # Exit 0: all agree. Exit 3: a target differs or is missing. Exit 2: setup problem.
 set -u
 source "$(dirname "$0")/sheaf_env.sh"

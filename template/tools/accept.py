@@ -32,7 +32,8 @@ The sandbox is lean/.sandbox/<group>/<task file name without .json>/. Nothing is
      `Verdict: defect`.
   3. The Lean files are submitted: the command `submit_cmd` of coord/dispatch.json is run with the group, the
      sandbox's lean/ directory and the files; exit 0 means they are in the library. How it compiles them is chosen
-     in skills/compiling/SKILL.md. The default, tools/submit.sh, lands them with tools/land.sh or tools/land_set.sh.
+     in skills/compiling/SKILL.md, by the main agent with the human. Until they have chosen, the default is the safest
+     layout, one frozen repository: tools/submit_frozen.py.
   4. Under a lock, the checks of 1 are run again, and the nodes and other files are written.
 """
 from __future__ import annotations
@@ -119,7 +120,7 @@ def submit(group: str, sb: pathlib.Path, lean_files: list[str]) -> tuple[bool, s
         cmd = json.loads((li.ROOT / "coord" / "dispatch.json").read_text()).get("submit_cmd")
     except (FileNotFoundError, json.JSONDecodeError):
         cmd = None
-    cmd = [str(x).replace("{tools}", str(T)) for x in (cmd or ["{tools}/submit.sh"])]
+    cmd = [str(x).replace("{tools}", str(T)) for x in (cmd or ["{tools}/submit_frozen.py"])]
     r = subprocess.run(cmd + [group, str(sb / "lean")] + lean_files, capture_output=True, text=True,
                        cwd=li.ROOT, env=dict(os.environ, SHEAF_GROUP=group))
     out = (r.stdout + r.stderr).strip()

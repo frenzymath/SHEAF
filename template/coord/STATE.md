@@ -8,6 +8,12 @@ The processes of the project (`tools/README.md` § Running the project), the mac
 
 (not started)
 
+## Compiling
+
+The layout of `skills/compiling/SKILL.md`, the measurements it was chosen from, and that the human confirmed them.
+
+(not chosen: the default, one frozen repository. The statements in the library are frozen.)
+
 ## Decisions
 
 What the main agent decided that the code could not, and is still in force.

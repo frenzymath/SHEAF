@@ -2,6 +2,10 @@
 """Submit command of the second and the third layout of skills/compiling/SKILL.md, where the statements in the
 library are frozen. A sketch, written quickly: change it to fit the project, as long as the skill's rules hold.
 
+Without --pr it is the default submit command of tools/accept.py: the safest layout, which needs the least of the
+machine. It stays the default until the main agent and the human have confirmed the machine's resources and chosen a
+layout with skills/compiling/SKILL.md.
+
 Usage:
   tools/submit_frozen.py [--pr] <group> <sandbox lean directory> <file under lean/>...
 

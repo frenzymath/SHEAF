@@ -48,6 +48,8 @@ All agents work on one Lean library and compile against it, so a wrong file in i
 - A file enters the library only through the submit command that `tools/accept.py` runs on a delivery, never by copying.
 - What you compile against is the library as the submit command leaves it (`tools/README.md`).
 
+Where `coord/STATE.md` says the statements are frozen, no delivery changes a statement or definition that is in the library: a correction is a new declaration, its node records the new declaration, and the proofs that use the old one move to it.
+
 The scripts in `tools/` carry this out; [`tools/README.md`](tools/README.md) says which does what. They are one implementation, written for one machine and one project, and the main agent changes them when they do not fit this one. If a script refuses correct work, lets wrong work through or does not fit the project, report it (§6); do not work around it and do not edit it yourself.
 
 ## 4. The targets

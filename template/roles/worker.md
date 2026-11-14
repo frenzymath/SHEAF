@@ -19,12 +19,12 @@ Your sandbox is `lean/.sandbox/<group>/<task>/`, named in your prompt; `SHEAF_GR
 
 In stage 1 you write DAG nodes and no Lean code: follow `stages/1-dag.md` §3 and §4, and skip the rest of this section.
 
-1. Copy the module into the sandbox and compile single files as often as you need, `tools/lean_file.sh <file>`. A file you compile there sees the library as far as it is compiled.
+1. Copy the module into the sandbox and compile single files as often as you need, `tools/lean_file.sh <file>`; where `coord/STATE.md` gives each worker a worktree, the sandbox's `lean/` is your worktree and you build in it with `lake build`. A file you compile there sees the library as far as it is compiled.
 2. The sources in `lean/` are newer than what you compile against: a declaration you can read in `lean/` and that your compile does not know is in the library but not compiled yet. Wait for it, and do not write the declaration again.
 3. A single-file compile gets 60 seconds. When a file needs longer, the cause is a definition it uses: find it and change it, and do not split the file to get under the limit (`stages/3-proving-and-pruning.md` §4).
 4. Prove the item by the shortest route, and remove the imports the proof does not use. A lemma you prove on the way that another module could use becomes a node with a module of its own (`stages/3-proving-and-pruning.md` §2).
 5. Split what you cannot finish into named theorems with `sorry`, each meeting `AGENTS.md` §5.
-6. To change a statement or definition that other modules use, adapt those modules too and deliver all of them together (`stages/3-proving-and-pruning.md` §3). Where `coord/STATE.md` says statements are frozen, write a new declaration instead and change the proofs that use the old one.
+6. To change a statement or definition that other modules use, adapt those modules too and deliver all of them together (`stages/3-proving-and-pruning.md` §3). Where the statements are frozen, see `AGENTS.md` §3.
 7. If a statement looks false, do not prove a weaker one in its place. Deliver with the result `disputed`, the reason and a counterexample if you find one.
 8. Update the node of your item as the stage document says: in stage 2 its module, declaration and Lean statement; in stage 3 the proof dependencies the Lean proof uses.
 

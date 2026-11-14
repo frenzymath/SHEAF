@@ -46,7 +46,7 @@ When a definition that a target statement uses changes later, that target is rev
 
 ## 5. Finished when
 
-In a green build:
+When the library compiles:
 
 - every node that is not in Mathlib has a compiling declaration, recorded in the node;
 - the target statements in the library have the same elaborated types as in `Challenge.lean`;

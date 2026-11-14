@@ -38,7 +38,7 @@ No agent claims, reviews or lands; no task is refused because a check thinks it 
 
 1. The agents need the Lean 4 skills (<https://github.com/cameronfreer/lean4-skills>). Install them if they are missing, and have the human enable them.
 2. Install `elan` if it is missing, after asking the human. Use the Mathlib version of `project/SETUP.md` and the Lean toolchain it pins. An existing project keeps its versions unless the human says otherwise.
-3. Set up the Lean project with Mathlib, or adopt the existing one, so that it is reached as `project/lean/` and `lake build` compiles every module of the library as well as `TargetsCheck.lean` and `Challenge.lean`. Write `project/coord/sheaf.env`, with `SHEAF_EARLY_REVIEW=1` when `project/SETUP.md` asks for the early review, and `project/coord/machines/<host name>.env` if this machine needs settings of its own (`project/tools/README.md`). Check on a small file that the build and a single-file compile work, then choose how deliveries are compiled (`project/skills/compiling/SKILL.md`).
+3. Set up the Lean project with Mathlib, or adopt the existing one, so that it is reached as `project/lean/` and `lake build` compiles every module of the library as well as `TargetsCheck.lean` and `Challenge.lean`. Write `project/coord/sheaf.env`, with `SHEAF_EARLY_REVIEW=1` when `project/SETUP.md` asks for the early review, and `project/coord/machines/<host name>.env` if this machine needs settings of its own (`project/tools/README.md`). Check on a small file that the build and a single-file compile work. Then measure the machine as `project/skills/compiling/SKILL.md` says, go through its resources with the human, and choose with them how deliveries are compiled; until you both have confirmed it, the default, the safest layout, stays.
 4. Write `project/coord/dispatch.json` (§3). Create `project/coord/ledger.md` and `project/coord/changes/`. Commit `project/`.
 
 ## 5. Starting the dispatcher
@@ -68,7 +68,7 @@ Set a timer that wakes you for each check, every ten minutes at first. Let what 
   - *A dispatcher error.* Read it and repair the code (§7).
 - **The work around the stages is opened by code**: the review of each target statement when it is in the library and again when a definition it uses changes, its repair when the review finds a defect, `Challenge.lean` when every target is reviewed, the correction of a statement a worker disputes (`project/tools/tasks.py`). You add a task of your own, `python3 tools/tasks.py add <id> <stage> "<instructions>"`, only for what none of these covers, such as the final check with Lean comparator; name in `--files` every file outside the library it may deliver.
 - **The human.** Read `project/coord/HUMAN.md` and `project/literature/LIST.md`. Bring every open question and every wanted document to the human at once, and ask again until it is settled. Put the documents they provide into `project/literature/`. Record in `project/SETUP.md` what the human decides for the rest of the run.
-- **The numbers.** The workers wait for single-file compiles: when compiles slow down or the machine runs out of memory, lower `slots`; when the machine is idle and tasks are open, raise it.
+- **The numbers.** The workers wait for their compiles: when compiles slow down or the machine runs out of memory, lower `slots`; when the machine is idle and tasks are open, raise it.
 
 ## 7. Changing the contract
 
