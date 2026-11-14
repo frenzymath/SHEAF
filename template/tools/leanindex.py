@@ -12,6 +12,21 @@ LEAN = (ROOT / "lean").resolve()
 COMMENT_KINDS = ("line", "block", "doc", "moddoc")
 
 
+def _unroot(name: str) -> str:
+    """`_root_.X` is `X` (str.removeprefix needs Python 3.9)."""
+    return name[len("_root_."):] if name.startswith("_root_.") else name
+
+
+def ensure_utf8():
+    """Run the calling script in Python's UTF-8 mode when the locale is not UTF-8 (a latin-1 or GBK locale would
+    otherwise fail on non-ASCII nodes and logs); the children it starts inherit it."""
+    import locale, sys
+    if sys.flags.utf8_mode or locale.getpreferredencoding(False).lower().replace("-", "") == "utf8":
+        return
+    os.environ["PYTHONUTF8"] = "1"
+    os.execv(sys.executable, [sys.executable, "-X", "utf8"] + sys.argv)
+
+
 def config() -> dict[str, str]:
     cfg = {}
     import socket
@@ -139,7 +154,8 @@ def sorry_count(s: str) -> int:
 _DECL = re.compile(
     r"^\s*(?:@\[[^\]]*\]\s*)*(?!.*\bprivate\b)(?:protected\s+|noncomputable\s+|local\s+|scoped\s+|unsafe\s+|partial\s+)*"
     r"(?:def|theorem|lemma|instance|abbrev|structure|class|inductive|opaque)\s+([^\s({\[:⦃]+)", re.M)
-_IMPORT = re.compile(r"^import\s+([\w.']+)", re.M)
+# `import M`, and in the module system `public import M`, `meta import M`, `import all M`
+_IMPORT = re.compile(r"^(?:public\s+)?(?:meta\s+)?import\s+(?:all\s+)?([\w.'«»]+)", re.M)
 
 
 def imports_of(text: str) -> set[str]:
@@ -161,7 +177,7 @@ def decls_in_text(text: str) -> set[str]:
             continue
         mm = _DECL.match(line)
         if mm:
-            name = mm.group(1).removeprefix("_root_.")
+            name = _unroot(mm.group(1))
             ns = [n for k, n in stack if k == "ns"]
             out.add(".".join(ns + [name]) if ns and not mm.group(1).startswith("_root_.") else name)
     return out
@@ -223,7 +239,7 @@ def commands(text: str) -> list[dict]:
             if n and not (kind == "instance" and rest[:1] in ":([{⦃"):
                 name, rest = n.group(1), n.group(2)
                 ns = [x for k, x in stack if k == "ns"]
-                name = name.removeprefix("_root_.") if name.startswith("_root_.") or not ns else ".".join(ns + [name])
+                name = _unroot(name) if name.startswith("_root_.") or not ns else ".".join(ns + [name])
             cur = {"kind": kind, "name": name, "private": "private" in mods.split(),
                    "head": " ".join(pending + [attrs.strip(), mods.strip()]).strip(), "lines": [rest]}
             pending = []
@@ -245,10 +261,11 @@ def interface(text: str) -> dict[str, str]:
     """What the modules importing this one can see: for a theorem its head and statement, for any other declaration
     its whole text, plus the imports and the other commands. Proof bodies, private declarations and comments are not
     part of it."""
-    out, other = {"#imports": " ".join(sorted(imports_of(text)))}, []
+    public = {m.group(1) for m in _IMPORT.finditer(strip(text)) if m.group(0).startswith("public")}
+    out, other = {"#imports": " ".join(sorted(imports_of(text))), "#public": " ".join(sorted(public))}, []
     for c in commands(text):
         if c["kind"] == "other":
-            if not c["text"].startswith("import "):
+            if not _IMPORT.match(c["text"]):
                 other.append(c["text"])
         elif c["private"] or c["kind"] == "example":
             continue
@@ -264,13 +281,13 @@ def interface(text: str) -> dict[str, str]:
 def interface_changes(old: str, new: str) -> list[str]:
     """What a change to a module changes for the modules importing it; empty when only proofs changed or plain
     declarations were added. Listed: a declaration removed or changed in what `interface` records, a declaration
-    added with an attribute or as an instance (it changes elaboration downstream), a removed import, and a change
+    added with an attribute or as an instance (it changes elaboration downstream), a removed import or one no longer public, and a change
     in the other commands."""
     a, b = interface(old), interface(new)
     out = [k for k in a if not k.startswith("#") and (k not in b or a[k] != b[k])]
     out += [k for k in b if not k.startswith("#") and k not in a
             and (b[k].split(" | ")[0].strip() or b[k].split(" | ")[1].startswith("instance"))]
-    if set(a["#imports"].split()) - set(b["#imports"].split()):
+    if set(a["#imports"].split()) - set(b["#imports"].split()) or set(a["#public"].split()) - set(b["#public"].split()):
         out.append("(imports removed)")
     if a["#commands"] != b["#commands"]:
         out.append("(commands such as variable, open, notation or attribute)")

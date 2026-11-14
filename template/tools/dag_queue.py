@@ -6,7 +6,7 @@ Usage:
   tools/dag_queue.py items        the open items, one per line: stage, item, distance (to a target in stage 1, to Mathlib in stage 2), kind
   tools/dag_queue.py waiting      modules whose proof uses a node that has no Lean declaration yet, one per line
 
-`queue.py write` calls this and puts the items into coord/queue.tsv; run this by hand only to look.
+tasks.py builds on this and writes the tasks; run this by hand only to look.
 
 What is open follows the stage documents. A node that no target reaches is not open for any stage. A node is open for
 
@@ -25,7 +25,7 @@ proof cannot be written yet. The order of the dependencies is never overridden: 
 nodes its statement needs, so stage 2 climbs from Mathlib upward whatever order stage 1 or stage 3 keep.
 
 The DAG layout is the project's own (`stages/1-dag.md` §1 fixes the content, not the field names). The FIELDS
-table below lists the names this script accepts for each piece of content; the maintainer adapts it to the
+table below lists the names this script accepts for each piece of content; the main agent adapts it to the
 project's layout, as `tools/README.md` says. `SHEAF_DAG` in coord/sheaf.env names the node directory when it is
 not `dag/nodes`.
 """

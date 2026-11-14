@@ -4,34 +4,33 @@
 
 ## 1. Who does what
 
-An item of this stage is a module that a target reaches, that contains `sorry`, and whose node's proof dependencies all have a Lean declaration or are in Mathlib. A module whose proof would use a node that is not stated yet waits, listed as waiting in the queue, until stage 2 has stated that node. This stage goes from the targets downward.
+An item of this stage is a module that contains `sorry`, that a target reaches, through the DAG or through the imports of `lean/TargetsCheck.lean`, and whose node's proof dependencies all have a Lean declaration or are in Mathlib, at whatever depth below the target. A module whose proof would use a node that is not stated yet waits until stage 2 has stated that node: a prover must see what it can use before choosing a route. This stage goes from the targets downward.
 
-- The **maintainer** keeps the queue. It is computed from the imports in the Lean code, not from the DAG: the modules that `lean/TargetsCheck.lean` reaches and that contain `sorry`, in this order: the repairs in `coord/repairs.txt`, the statements marked `STATEMENT-DISPUTED`, then the rest, nearest to a target first. Proving from the top shows which nodes below are needed.
-- A **lead** claims modules and gives each to a worker.
-- A **worker** proves its module (§2).
-- The lead reviews and lands it.
+- `tools/tasks.py` opens a task for every such module, in this order: the repairs in `coord/repairs.txt`, the statements marked `STATEMENT-DISPUTED`, then the rest, nearest to a target first. A module opens the moment the last node its proof uses is stated. The task lists those nodes with their declarations.
+- A **worker** proves its module (§2), and records in its node the proof dependencies the Lean proof uses.
+- `tools/accept.py` lands it. If `sorry` is left, the task stays open for the next worker. A node that a recorded proof no longer uses is no longer reached from a target, and its task is withdrawn: that is the pruning.
 
 ## 2. Pruning
 
 - The proof in the DAG is a plan. An item may be proved by any route, and the shortest is the best: a special case, a Mathlib lemma, a simpler argument.
 - A `sorry` that a new route leaves behind has a source and meets `AGENTS.md` §5. An idea without a source that would leave `sorry`s goes into the report, not into the library.
-- Once a proof compiles, remove the imports it does not use. A module that no target reaches any more leaves the queue and is never proved; its node records why.
+- Once a proof compiles, remove the imports it does not use. A module that no target reaches any more has no task and is never proved; its node records why.
 - A lemma the proof needs that another module could use becomes a node, under the rules of stage 1, with a module of its own that the proof imports, and is never `private`: a result with a name or a place in the literature, and also a general lemma about Mathlib's objects or about Lean that Mathlib lacks.
 
 ## 3. Changing a definition or a statement
 
 Any worker may change a definition or an intermediate statement that turns out to be wrong or hard to use.
 
-1. The lead claims the module and the modules that must be adapted. A module that another group has claimed stays with that group: change in it only what the adaptation requires, and name it and its group in the record of step 3.
+1. Change in a module that is not your item only what the adaptation requires, and name it in the record of step 3. Another worker may hold that module: deliver complete files built on the version in the library, and say in your report which modules of others you adapted.
 2. List the modules that depend on it, and check for each that what it states does not become weaker, stronger or different.
 3. Write `coord/changes/<name>.md`: the reason, the old and the new version, the effect on each user, and the status.
-4. Land the change with all adapted modules as one set. Close the record when the global build has verified the set.
+4. Deliver the change with all adapted modules together: they land as one set. Close the record when the set is in the library.
 
 A target statement keeps its elaborated type, and a target whose statement uses the changed definition is reviewed again (`stages/2-statements.md` §4).
 
 Of two definitions of one notion, keep the better one and make the other name an `abbrev` of it.
 
-A statement believed false is marked `STATEMENT-DISPUTED: <reason>` and goes to the front of the queue. Whoever takes it looks for a counterexample, finds the correct statement, and changes it by the steps above.
+A statement believed false is marked `STATEMENT-DISPUTED: <reason>` and its task comes before the others. Whoever takes it looks for a counterexample, finds the correct statement, and changes it by the steps above.
 
 ## 4. Slow compiles
 
@@ -39,7 +38,7 @@ A file that exceeds the time limit is slow because of the definitions it uses, n
 
 ## 5. Finished when
 
-The queue is empty in a green build, and both parts of the completion criterion of `GOAL.md` hold:
+No task of this stage is open, the library compiles, and both parts of the completion criterion of `GOAL.md` hold:
 
-- the maintainer has run Lean comparator on the commit of that build, and it accepts the library against `lean/Challenge.lean`;
-- the review of every target in `coord/targets-review.md` holds for the definitions as they are now.
+- Lean comparator, run on the commit of that build, accepts the library against `lean/Challenge.lean`;
+- the review of every target in `coord/targets-review/` holds for the definitions as they are now.

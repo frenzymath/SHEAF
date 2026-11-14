@@ -1,0 +1,12 @@
+{
+ "slots": 4,
+ "starts_per_min": 60,
+ "accept_slots": 2,
+ "gen_every": 600,
+ "continue": true,
+ "max_chain": 20,
+ "continue_wait": 600,
+ "worker_cmd": ["codex", "exec", "--json", "--dangerously-bypass-approvals-and-sandbox", "-c", "model_reasoning_effort=xhigh", "-C", "{root}", "{prompt}"],
+ "resume_cmd": ["codex", "exec", "resume", "--json", "--dangerously-bypass-approvals-and-sandbox", "-c", "model_reasoning_effort=xhigh", "{session}", "{prompt}"],
+ "session_regex": "\"thread_id\"\\s*:\\s*\"([^\"]+)\""
+}

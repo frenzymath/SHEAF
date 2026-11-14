@@ -1,46 +1,53 @@
 # AGENTS.md
 
-This directory is one project: formalizing a paper in Lean 4, over Mathlib, with many agents working at once. Read this file first, then the document of your role and the documents of the stages that are open, which `coord/STATE.md` names. The three stages are three kinds of work on a node, and they overlap: which stage a node is in follows from its own state, never from a calendar (`roles/maintainer.md` §6).
+This directory is one project: formalizing a paper in Lean 4, over Mathlib, with many agents working at once. Read this file first, then [`roles/worker.md`](roles/worker.md) and the stage document your task names.
 
-## 1. Who you are
+## 1. Who does what
 
-Your first prompt says who you are and which role document is yours.
+Agents do the mathematics; code does the process. There are two kinds of agent:
 
-| You are | Started by | Read next |
-|---|---|---|
-| the maintainer | the launcher | [`roles/maintainer.md`](roles/maintainer.md) |
-| the lead of a group | the launcher | [`roles/lead.md`](roles/lead.md) |
-| a worker on one item | a lead, as a sub-agent | [`roles/worker.md`](roles/worker.md) |
+- **Workers** do tasks: a node to split, a node to state, a module to prove, or a task the main agent wrote. `tools/dispatch.py` starts them, one per task, and gives a worker that delivered the next task next to its item. Your first prompt names your task; your role document is [`roles/worker.md`](roles/worker.md).
+- **The main agent** is the one the human talks to. It works outside this directory: it set the project up, keeps the code running, and decides what the code cannot (`coord/attention.md`), with the human when it must (`coord/HUMAN.md`). It writes no mathematics: what needs an agent becomes a task.
 
-The launcher is the agent the human talks to. It works outside this directory: it started the project, keeps the sessions running, and brings the questions in `coord/HUMAN.md` to the human.
+Everything else is code, in `tools/`: which items are open, who works on what, checking a delivery and putting it into the library.
+
+### Three stages at once
+
+The three stages are three kinds of work on a node, and they run at the same time on different parts of the DAG. Which stage a node is in follows from its own state, never from a calendar:
+
+- a node is split (stage 1) while a target reaches it and its proof is not written in steps;
+- it is stated (stage 2) as soon as it is split and every node its statement uses is stated;
+- its module is proved (stage 3) as soon as every node its proof uses is stated.
+
+The order of the dependencies is never overridden: stage 1 runs from the targets downward, stage 2 from Mathlib upward, stage 3 from the targets downward. `tools/tasks.py` computes what is open from the DAG and the library. When a delivery lands, the nodes it touches and the nodes that use them are computed again at once, so the work it unblocks opens in that moment, in whichever stage, without waiting for any round. A task is a file, `coord/tasks/<task>.json`, that holds everything a worker needs to start.
 
 ## 2. The project directory
 
 This directory is the project, and a git repository of its own. Everything you read and write is in it.
 
 ```
-AGENTS.md  roles/  stages/   the contract: how each role works, and what each stage produces
-tools/                       scripts for the few operations that must be exact (tools/README.md)
+AGENTS.md  roles/  stages/   the contract: how a worker works, and what each stage produces
+tools/                       the code that runs the process (tools/README.md)
 SETUP.md                     the human's settings and requirements; every agent follows them
 GOAL.md                      the goal of every agent: the targets and the completion criterion
 literature/                  the papers and textbooks the proofs follow; LIST.md lists those obtained and those wanted
 dag/nodes/                   the DAG, one JSON file per node
-lean/                        the Lean project; group sandboxes in lean/.sandbox/<group>/
-coord/                       what the agents and the human tell each other: STATE.md, HUMAN.md, ledger.md,
-                             targets-review.md, the queue, claims, changes, settings
+lean/                        the Lean project; sandboxes in lean/.sandbox/<group>/<task>/
+coord/                       the tasks (tasks/, queue.md), the deliveries (deliveries/), what the main agent and the
+                             human must decide (attention.md, HUMAN.md), STATE.md, ledger.md, targets-review/,
+                             changes/, settings (sheaf.env, dispatch.json)
 local/                       what this machine builds for itself; not committed
 ```
 
 ## 3. One library, many agents
 
-All agents work on one Lean library and compile against it, so a wrong file in it stops everyone who imports it. Four rules keep it usable; the role documents say how each role carries them out.
+All agents work on one Lean library and compile against it, so a wrong file in it stops everyone who imports it. Four rules keep it usable.
 
-- Agents compile single files only. Only the maintainer builds the library.
-- A file enters the library by landing, which a lead does after reviewing it, never by copying.
-- Every landing is verified by the maintainer's global build. When one fails it, the maintainer repairs the build or reverts the landing.
-- What you compile against is the last green global build, plus what your own group has landed since.
+- Agents compile single files only, in their sandboxes.
+- A file enters the library only through the submit command that `tools/accept.py` runs on a delivery, never by copying.
+- What you compile against is the library as the submit command leaves it (`tools/README.md`).
 
-The scripts in `tools/` carry this out; [`tools/README.md`](tools/README.md) says which does what. They are one implementation, written for one machine and one project, and the maintainer changes them when they do not fit this one. If a script refuses correct work, lets wrong work through or does not fit the project, report it (§6); do not work around it and do not edit it yourself.
+The scripts in `tools/` carry this out; [`tools/README.md`](tools/README.md) says which does what. They are one implementation, written for one machine and one project, and the main agent changes them when they do not fit this one. If a script refuses correct work, lets wrong work through or does not fit the project, report it (§6); do not work around it and do not edit it yourself.
 
 ## 4. The targets
 
@@ -61,4 +68,4 @@ So the target statements change only on the human's instruction. A change to a d
 
 ## 6. When the process fails
 
-The process of this project is what lets many agents work on one library. When you notice something going against it, a rule that does not fit, a tool that misbehaves, an agent working around the contract, handle it at once if it is yours to handle; otherwise report it upward: a worker to the agent that gave it the work, a lead to the maintainer, the maintainer in `coord/HUMAN.md`, which the launcher brings to the human.
+The process of this project is what lets many agents work on one library. When you notice something going against it, a rule that does not fit, a tool that misbehaves, an agent working around the contract, handle it at once if it is yours to handle; otherwise say so in the report of your delivery. The main agent reads the reports through `coord/attention.md` and the task notes, and brings to the human what needs the human.
