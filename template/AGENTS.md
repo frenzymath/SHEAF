@@ -28,6 +28,7 @@ This directory is the project, and a git repository of its own. Everything you r
 ```
 AGENTS.md  roles/  stages/   the contract: how a worker works, and what each stage produces
 tools/                       the code that runs the process (tools/README.md)
+skills/                      choices that depend on the machine: how deliveries are compiled
 SETUP.md                     the human's settings and requirements; every agent follows them
 GOAL.md                      the goal of every agent: the targets and the completion criterion
 literature/                  the papers and textbooks the proofs follow; LIST.md lists those obtained and those wanted
@@ -41,9 +42,9 @@ local/                       what this machine builds for itself; not committed
 
 ## 3. One library, many agents
 
-All agents work on one Lean library and compile against it, so a wrong file in it stops everyone who imports it. Four rules keep it usable.
+All agents work on one Lean library and compile against it, so a wrong file in it stops everyone who imports it. How deliveries are compiled depends on the machine; the main agent chooses it with [`skills/compiling/SKILL.md`](skills/compiling/SKILL.md) and records it in `coord/STATE.md`. Three rules hold whatever the choice.
 
-- Agents compile single files only, in their sandboxes.
+- Compile single files in your sandbox; build the whole library only in a worktree of your own, when `coord/STATE.md` gives you one.
 - A file enters the library only through the submit command that `tools/accept.py` runs on a delivery, never by copying.
 - What you compile against is the library as the submit command leaves it (`tools/README.md`).
 

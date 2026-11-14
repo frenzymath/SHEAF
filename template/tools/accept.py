@@ -31,8 +31,8 @@ The sandbox is lean/.sandbox/<group>/<task file name without .json>/. Nothing is
   2. Other files are only those the task lists. A target review ends with a line `Verdict: locked` or
      `Verdict: defect`.
   3. The Lean files are submitted: the command `submit_cmd` of coord/dispatch.json is run with the group, the
-     sandbox's lean/ directory and the files; exit 0 means they are in the library. What it does to verify them is
-     not decided here. The default, tools/submit.sh, lands them with tools/land.sh or tools/land_set.sh.
+     sandbox's lean/ directory and the files; exit 0 means they are in the library. How it compiles them is chosen
+     in skills/compiling/SKILL.md. The default, tools/submit.sh, lands them with tools/land.sh or tools/land_set.sh.
   4. Under a lock, the checks of 1 are run again, and the nodes and other files are written.
 """
 from __future__ import annotations

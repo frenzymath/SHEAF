@@ -6,7 +6,7 @@ What must hold, and why, is written in `AGENTS.md` and in the stage documents. T
 
 ## Changing the tools
 
-The scripts were written for one machine and one project, and may be changed to fit the project at hand: another DAG layout, another layout of the Lean project, a limit that is too tight, a check that refuses correct work or misses wrong work.
+The scripts were written quickly, for one machine and one project, and are meant to be changed freely to fit the project at hand: another DAG layout, another layout of the Lean project, a limit that is too tight, a check that refuses correct work or misses wrong work.
 
 The main agent decides on a change and makes it, since the code runs for every agent and a change reaches all of them at once. Workers report what does not fit in their delivery reports. The main agent:
 
@@ -51,7 +51,10 @@ And these, which the processes call or a human or the main agent runs to look:
 |---|---|
 | `tasks.py gen / refresh / list / show / summary / add` | The tasks, `coord/tasks/<task>.json`, and the readable view `coord/queue.md`. `gen` computes what is open in all three stages; `refresh <node>…` does it for these nodes and the nodes that use them, after an event; Besides the items of the stages it opens the work around them: target reviews and their fixes, `Challenge.lean`, corrections of disputed statements, diagnoses of tasks that failed 5, 10, 20, 40 times. `add` writes a task of the main agent's own. The state of each task is the last line of `coord/tasks/events.tsv` that names it. |
 | `accept.py <task> <group>` | Checks a delivery and, if it passes, puts it in: the nodes into the DAG, the Lean files through the submit command. It answers only by its exit code, accepted or not; `dispatch.py` then has `tasks.py settle` handle the task from that code: done, or back to the list with the reason, and what the result opens or closes. |
-| `submit.sh <group> <dir> <file>…` | The default submit command: how a delivery's Lean files enter the library. It calls `land.sh` or `land_set.sh` below. How a delivery is verified and enters the library is a question of its own, not settled by the three-stage code; `submit_cmd` in `coord/dispatch.json` replaces this command. |
+| `submit.sh <group> <dir> <file>…` | The default submit command: how a delivery's Lean files enter the library. It calls `land.sh` or `land_set.sh` below. `submit_cmd` in `coord/dispatch.json` replaces it with the command of the layout chosen in `skills/compiling/SKILL.md`. |
+| `submit_pr.sh <group> <dir> <file>…` | The submit command of the layout with one worktree per worker: the files become a pull request to the main repository, and it waits until the managing agent merges it or sends it back. Each waiting submission holds an acceptance, so `accept_slots` must be about `slots`. |
+| `submit_frozen.py [--pr] <group> <dir> <file>…` | The submit command of the layouts with frozen statements: compiles the files in import order against the library's compiled files and puts sources and compiled files in. A statement change is refused, or with `--pr` (the layout with isolation repositories) sent to the managing agent as a pull request. |
+| `prs.py open / wait / list / apply / close` | The pull requests to the managing agent: `list` shows each with what it changes for other modules, `apply` writes chosen ones into the managing agent's copy, `close` merges or sends back. Building and merging the batch is the managing agent's work. |
 | `worker_prompt.md` | The prompt a worker starts with, and the one for its next task in the same session. |
 | `coord/attention.md` | Not a tool: where the code writes what it cannot decide. A high-risk worker, the report of a diagnosis, a dispatcher error. |
 
