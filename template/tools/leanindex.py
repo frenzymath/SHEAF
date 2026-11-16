@@ -258,16 +258,16 @@ def statements_in_text(text: str) -> dict[str, str]:
 
 
 def interface(text: str) -> dict[str, str]:
-    """What the modules importing this one can see: for a theorem its head and statement, for any other declaration
-    its whole text, plus the imports and the other commands. Proof bodies, private declarations and comments are not
-    part of it."""
+    """What the modules importing this one can see or unfold to: for a theorem its head and statement, for any other
+    declaration its whole text, plus the imports and the other commands. Proof bodies, private theorems and comments
+    are not part of it."""
     public = {m.group(1) for m in _IMPORT.finditer(strip(text)) if m.group(0).startswith("public")}
     out, other = {"#imports": " ".join(sorted(imports_of(text))), "#public": " ".join(sorted(public))}, []
     for c in commands(text):
         if c["kind"] == "other":
             if not _IMPORT.match(c["text"]):
                 other.append(c["text"])
-        elif c["private"] or c["kind"] == "example":
+        elif c["kind"] == "example" or (c["private"] and c["kind"] in ("theorem", "lemma")):
             continue
         elif c["kind"] in ("theorem", "lemma"):
             out[c["name"]] = c["head"] + " | " + c["statement"]
