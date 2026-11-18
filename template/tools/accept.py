@@ -175,6 +175,8 @@ def accept(tid: str, group: str) -> int:
     errs, got = check_nodes(task, sb, node_files, lean_files)
     if errs:
         return refuse("the nodes do not pass:\n" + "\n".join(errs))
+    if task.get("kind") != "challenge" and ("Challenge.lean" in lean_files or "lean/Challenge.lean" in other):
+        return refuse("lean/Challenge.lean is frozen; only the challenge task writes it (stages/2-statements.md §4)")
     bad = [f for f in other if f not in task.get("files", [])]
     if bad:
         return refuse("files the task does not list: " + " ".join(bad))

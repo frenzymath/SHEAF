@@ -24,7 +24,7 @@ In stage 1 you write DAG nodes and no Lean code: follow `stages/1-dag.md` §3 an
 3. A single-file compile gets 60 seconds. When a file needs longer, the cause is a definition it uses: find it and change it, and do not split the file to get under the limit (`stages/3-proving-and-pruning.md` §4).
 4. Prove the item by the shortest route, and remove the imports the proof does not use. A lemma you prove on the way that another module could use becomes a node with a module of its own (`stages/3-proving-and-pruning.md` §2).
 5. Split what you cannot finish into named theorems with `sorry`, each meeting `AGENTS.md` §5.
-6. To change a statement or definition that other modules use, adapt those modules too and deliver all of them together (`stages/3-proving-and-pruning.md` §3). Where the statements are frozen, see `AGENTS.md` §3.
+6. To change a statement or definition that other modules use, adapt those modules too and deliver all of them together (`stages/3-proving-and-pruning.md` §3). Where the statements are frozen, see `AGENTS.md` §3. A declaration that `lean/Challenge.lean` copies is locked: leave it as it is, and if it looks wrong, deliver `disputed` (§2.7).
 7. If a statement looks false, do not prove a weaker one in its place. Deliver with the result `disputed`, the reason and a counterexample if you find one.
 8. Update the node of your item as the stage document says: in stage 2 its module, declaration and Lean statement; in stage 3 the proof dependencies the Lean proof uses.
 

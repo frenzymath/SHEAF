@@ -31,7 +31,7 @@ The order is set by the dependencies: a node is stated after the nodes its state
 
 When target statements are in the library, the code writes `lean/TargetsCheck.lean` and opens the tasks for the rest (`tools/tasks.py`):
 
-- `lean/Challenge.lean`: the target statements verbatim, with `sorry` proofs, importing only the modules that define what the statements use;
+- `lean/Challenge.lean`: it imports only Mathlib, holds a copy of every declaration of the library that the target statements use, down to Mathlib, under the same names, and then the target statements verbatim, with `sorry` proofs;
 - `lean/TargetsCheck.lean`: imports the target modules and nothing else. What it reaches is what the targets need.
 
 `Challenge.lean` must say what the paper says (`AGENTS.md` §4). A worker that did not write the target statement reviews it, in a task the code opens when the statement is in the library and again whenever the statement or a definition it uses changes, and writes `coord/targets-review/<target>.md`, whose last line is `Verdict: locked` or `Verdict: defect`:
@@ -44,10 +44,12 @@ Anything added, dropped, weakened or defined differently is a defect: the code o
 
 When a definition that a target statement uses changes later, that target is reviewed again.
 
+The declarations a target statement uses are public: Lean comparator cannot match a private declaration with its copy. Once written, `Challenge.lean` is frozen: only the challenge task writes it, and that task opens again only when the targets are locked again. Lean comparator checks that every declaration the target statements use is the same in the library as in `Challenge.lean`, so a change to one of them, made without locking the targets again, fails it; `tools/challenge_check.sh` makes the same comparison on any passing build.
+
 ## 5. Finished when
 
 When the library compiles:
 
 - every node that is not in Mathlib has a compiling declaration, recorded in the node;
-- the target statements in the library have the same elaborated types as in `Challenge.lean`;
+- the library agrees with `Challenge.lean`: the target statements and every declaration they use (`tools/challenge_check.sh`);
 - every target is reviewed and locked.

@@ -89,7 +89,7 @@ A single-file compile of a module cannot show its effect on other modules, becau
 
 | Tool | What it is for |
 |---|---|
-| `target_types.sh check` | Whether each target statement in the library is exactly the one in `lean/Challenge.lean`, by comparing elaborated types; also prints each target's axioms. For the end of stage 2 and before the final check; it is not part of a build. |
+| `challenge_check.sh check` | Whether the library agrees with `lean/Challenge.lean` as Lean comparator will judge it: `Challenge.lean` imports nothing of the library, and every target statement and every library declaration it uses, through types and the values of definitions, is the same on both sides, compared by elaborated terms; reports private ones; prints the axioms of each target. After a passing build. |
 | `hollow_defs.sh` | The definitions the targets reach that depend on `sorry` in any way. They are candidates: each is read to decide whether it is hollow or only refers to an unproved theorem for a proof it needs. For the main agent, to have the definitions checked. |
 
 ## The global build

@@ -42,6 +42,7 @@ Besides the items of the three stages, the code opens tasks for the work around 
   target-fix     fix-<target>: the review of the present version found a defect;
   challenge      challenge: every target is reviewed without defect, and lean/Challenge.lean was not written for
                  these versions; lean/TargetsCheck.lean, which imports the target modules, is written by the code;
+                 afterwards Challenge.lean is frozen, and a change to it that no challenge task made is an alert;
   dispute        dispute-<task>: a worker delivered `disputed`; the disputed task is withdrawn until it is done;
   diagnose       diagnose-<task>-<n>: a task failed n = 5, 10, 20, 40 times.
 The first three follow from the state like the stage items; the last two are opened by the event and stay until
@@ -298,7 +299,8 @@ def settle(tid: str, code: int, reason: str = "", who: str = "-"):
             if t.get("kind") == "target-review":
                 record_review(t, dv)
             if t.get("kind") == "challenge":
-                write_json(REVIEWS / "challenge.json", {"hash": t.get("inputs_hash"), "at": now()})
+                write_json(REVIEWS / "challenge.json", {"hash": t.get("inputs_hash"), "at": now(),
+                                                        "file": challenge_digest()})
             if t.get("kind") == "diagnose":
                 alert(f"diagnosis of {t.get('about')} ({tid}): {str(dv.get('report', ''))[:600]}")
             if t.get("kind") == "dispute" and t.get("about"):
@@ -556,10 +558,24 @@ def special(g: Dag) -> dict[str, dict]:
         if (read_json(REVIEWS / "challenge.json") or {}).get("hash") != h:
             out["challenge"] = task(
                 "challenge", "challenge", 2, None,
-                "Write lean/Challenge.lean as stages/2-statements.md §4 says: the reviewed target statements, "
-                "verbatim, with `sorry` proofs, importing only the modules that define what they use.",
+                "Write lean/Challenge.lean as stages/2-statements.md §4 says: it imports only Mathlib, copies every "
+                "declaration of the library that the reviewed target statements use, down to Mathlib, under the same "
+                "names, and then states the targets verbatim with `sorry` proofs. tools/challenge_check.sh check must "
+                "pass after the next build.",
                 ["lean/Challenge.lean"], h)
+    frozen = read_json(REVIEWS / "challenge.json") or {}
+    now_digest = challenge_digest()
+    if "challenge" not in out and frozen.get("file") and now_digest != frozen["file"] \
+            and frozen.get("alerted") != now_digest:
+        alert("lean/Challenge.lean changed although no target was locked again; it is frozen (stages/2-statements.md "
+              "§4): restore it, or lock the targets again so that the challenge task rewrites it")
+        write_json(REVIEWS / "challenge.json", dict(frozen, alerted=now_digest))
     return out
+
+
+def challenge_digest() -> str:
+    c = li.LEAN / "Challenge.lean"
+    return hashlib.sha256(c.read_bytes()).hexdigest()[:16] if c.is_file() else ""
 
 
 def load_dag() -> Dag:
